@@ -30,7 +30,7 @@
     "build": "yarn clean && yarn lint && yarn tsc && yarn rollup",
     "start": "node .",
     "clean": "rimraf dist/* --glob && rimraf out-tsc/* --glob",
-    "tsc": "tsc --declaration",
+    "tsc": "tsc",
     "rollup": "rollup -c rollup.config.js",
     "lint": "eslint . --fix"
   },
