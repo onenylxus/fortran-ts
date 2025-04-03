@@ -1,0 +1,45 @@
+{
+  "name": "@onenylxus/fortran-ts",
+  "version": "0.1.0",
+  "description": "Fortran language in TypeScript",
+  "author": "Nicholas Ng",
+  "license": "MIT",
+  "main": "dist/bundle.js",
+  "type": "module",
+  "dependencies": {},
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.1",
+    "@eslint/js": "^9.23.0",
+    "@rollup/plugin-commonjs": "^28.0.3",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^12.1.2",
+    "@types/node": "^22.14.0",
+    "@typescript-eslint/eslint-plugin": "^8.29.0",
+    "@typescript-eslint/parser": "^8.29.0",
+    "eslint": "^9.23.0",
+    "jiti": "^2.4.2",
+    "prettier": "^3.5.3",
+    "rimraf": "^6.0.1",
+    "rollup": "^4.39.0",
+    "tslib": "^2.8.1",
+    "typescript": "^5.8.2"
+  },
+  "scripts": {
+    "build": "yarn clean && yarn lint && yarn tsc && yarn rollup",
+    "start": "node .",
+    "clean": "rimraf dist/* --glob && rimraf out-tsc/* --glob",
+    "tsc": "tsc --declaration",
+    "rollup": "rollup -c rollup.config.js",
+    "lint": "eslint . --fix"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/onenylxus/fortran-ts.git"
+  },
+  "bugs": {
+    "url": "https://github.com/onenylxus/fortran-ts/issues"
+  },
+  "homepage": "https://github.com/onenylxus/fortran-ts#readme"
+}
