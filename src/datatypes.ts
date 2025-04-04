@@ -14,13 +14,21 @@ function isAscii(c: string): boolean {
   return isRangedInteger(c.charCodeAt(0), 8, false);
 }
 
-interface FIntrinsicOptions {
+interface FDataOptions {
   standard: FortranStandard;
   name: string;
   description: string;
 }
 
-abstract class FIntrinsic<T> {
+interface FDataDisplayOptions {
+  standard: string;
+  name: string;
+  description: string;
+}
+
+type FIntrinsicOptions = FDataOptions;
+
+abstract class FIntrinsic<T> implements FDataDisplayOptions {
   protected _value: T;
 
   public constructor(
@@ -43,6 +51,81 @@ abstract class FIntrinsic<T> {
 
   public abstract set value(v: T);
   public abstract get value(): T;
+}
+
+type FArrayOptions = {
+  dim: Dimension;
+} & FDataOptions;
+
+export abstract class FArray<P, T = FIntrinsic<P>>
+  implements FDataDisplayOptions
+{
+  protected _value: FortranArray<T>;
+  private _dim: Dimension;
+
+  public constructor(
+    protected _standard: FortranStandard,
+    protected _name: string,
+    protected _description: string,
+  ) {}
+
+  public get standard(): string {
+    return this._standard;
+  }
+
+  public get name(): string {
+    return this._name;
+  }
+
+  public get description(): string {
+    return this._description;
+  }
+
+  protected abstract build(v: P): T;
+
+  protected fromValue(a: FortranArray<P>, d: number): FortranArray<T> {
+    assert(Array.isArray(a));
+    assert(a.length === this.dim[d]);
+
+    if (d === 0) {
+      return a.map((v) => this.build(v));
+    }
+    return a.map((v) => this.fromValue(v, d - 1)) as FortranArray<T>;
+  }
+
+  protected toValue(a: FortranArray<T>): FortranArray<P> {
+    return [
+      undefined,
+      ...a.map((v) => {
+        if (Array.isArray(v)) {
+          return this.toValue(v);
+        }
+        return v.value;
+      }),
+    ];
+  }
+
+  public set value(v: FortranArray<P>) {
+    this._value = this.fromValue(v, this.dim.length - 1);
+  }
+
+  public get value(): FortranArray<P> {
+    return this.toValue(this._value);
+  }
+
+  protected set dim(d: Dimension) {
+    assert(Array.isArray(d));
+    assert(d.length >= 1 && d.length <= 7);
+    assert(d.every((l) => Number.isInteger(l) && l > 0));
+    this._dim = d;
+  }
+
+  public get dim(): Dimension {
+    if (typeof this._dim === 'number') {
+      return [this._dim];
+    }
+    return this._dim;
+  }
 }
 
 type FByteOptions = FIntrinsicOptions;
@@ -87,6 +170,37 @@ export class FByte extends FIntrinsic<Byte> {
   }
 }
 
+type FByteArrayOptions = FArrayOptions;
+
+export class FByteArray extends FArray<Byte> {
+  public constructor(
+    value: FortranArray<Byte>,
+    options: FByteArrayOptions = FByteArray.DefaultOptions,
+  ) {
+    super(
+      options.standard,
+      DatatypesJSON.byte.name,
+      DatatypesJSON.byte.description,
+    );
+
+    this.value = value;
+    this.dim = options.dim;
+  }
+
+  protected build(v: Byte): FByte {
+    return new FByte(v, { ...FByte.DefaultOptions, standard: this._standard });
+  }
+
+  public static get DefaultOptions(): FByteArrayOptions {
+    return {
+      standard: FortranStandard.f77,
+      name: DatatypesJSON.byte.name,
+      description: DatatypesJSON.byte.description,
+      dim: [1],
+    };
+  }
+}
+
 type FCharacterOptions = {
   len?: number;
 } & FIntrinsicOptions;
@@ -120,12 +234,12 @@ export class FCharacter extends FIntrinsic<string> {
     return this._value;
   }
 
-  private set len(v: number | undefined) {
-    if (v !== undefined) {
-      assert(Number.isInteger(v));
-      assert(v > 0);
+  private set len(l: number | undefined) {
+    if (l !== undefined) {
+      assert(Number.isInteger(l));
+      assert(l > 0);
     }
-    this._len = v;
+    this._len = l;
   }
 
   public get len(): number | undefined {
@@ -137,6 +251,45 @@ export class FCharacter extends FIntrinsic<string> {
       standard: FortranStandard.f77,
       name: DatatypesJSON.character.name,
       description: DatatypesJSON.character.description,
+    };
+  }
+}
+
+type FCharacterArrayOptions = {
+  len?: number;
+} & FArrayOptions;
+
+export class FCharacterArray extends FArray<string> {
+  private _len: number | undefined;
+
+  public constructor(
+    value: FortranArray<string>,
+    options: FCharacterArrayOptions = FCharacterArray.DefaultOptions,
+  ) {
+    super(
+      options.standard,
+      DatatypesJSON.character.name,
+      DatatypesJSON.character.description,
+    );
+
+    this.value = value;
+    this.dim = options.dim;
+  }
+
+  protected build(v: string): FCharacter {
+    return new FCharacter(v, {
+      ...FCharacter.DefaultOptions,
+      standard: this._standard,
+      len: this._len,
+    });
+  }
+
+  public static get DefaultOptions(): FCharacterArrayOptions {
+    return {
+      standard: FortranStandard.f77,
+      name: DatatypesJSON.character.name,
+      description: DatatypesJSON.character.description,
+      dim: [1],
     };
   }
 }
@@ -179,11 +332,11 @@ export class FComplex extends FIntrinsic<Complex> {
     return this._value;
   }
 
-  private set kind(v: ComplexKind | undefined) {
-    if (v !== undefined) {
-      assert([8, 16, 32].includes(v));
+  private set kind(k: ComplexKind | undefined) {
+    if (k !== undefined) {
+      assert([8, 16, 32].includes(k));
     }
-    this._kind = v;
+    this._kind = k;
   }
 
   public get kind(): ComplexKind | undefined {
@@ -195,6 +348,45 @@ export class FComplex extends FIntrinsic<Complex> {
       standard: FortranStandard.f77,
       name: DatatypesJSON.complex.name,
       description: DatatypesJSON.complex.description,
+    };
+  }
+}
+
+type FComplexArrayOptions = {
+  kind?: ComplexKind;
+} & FArrayOptions;
+
+export class FComplexArray extends FArray<Complex> {
+  private _kind: ComplexKind | undefined;
+
+  public constructor(
+    value: FortranArray<Complex>,
+    options: FComplexArrayOptions = FComplexArray.DefaultOptions,
+  ) {
+    super(
+      options.standard,
+      DatatypesJSON.complex.name,
+      DatatypesJSON.complex.description,
+    );
+
+    this.value = value;
+    this.dim = options.dim;
+  }
+
+  protected build(v: Complex): FComplex {
+    return new FComplex(v, {
+      ...FComplex.DefaultOptions,
+      standard: this._standard,
+      kind: this._kind,
+    });
+  }
+
+  public static get DefaultOptions(): FComplexArrayOptions {
+    return {
+      standard: FortranStandard.f77,
+      name: DatatypesJSON.complex.name,
+      description: DatatypesJSON.complex.description,
+      dim: [1],
     };
   }
 }
@@ -232,11 +424,11 @@ export class FInteger extends FIntrinsic<number> {
     return this._value;
   }
 
-  private set kind(v: IntegerKind | undefined) {
-    if (v !== undefined) {
-      assert([2, 4, 8].includes(v));
+  private set kind(k: IntegerKind | undefined) {
+    if (k !== undefined) {
+      assert([2, 4, 8].includes(k));
     }
-    this._kind = v;
+    this._kind = k;
   }
 
   public get kind(): IntegerKind | undefined {
@@ -248,6 +440,45 @@ export class FInteger extends FIntrinsic<number> {
       standard: FortranStandard.f77,
       name: DatatypesJSON.integer.name,
       description: DatatypesJSON.integer.description,
+    };
+  }
+}
+
+type FIntegerArrayOptions = {
+  kind?: IntegerKind;
+} & FArrayOptions;
+
+export class FIntegerArray extends FArray<number> {
+  private _kind: IntegerKind | undefined;
+
+  public constructor(
+    value: FortranArray<number>,
+    options: FIntegerArrayOptions = FIntegerArray.DefaultOptions,
+  ) {
+    super(
+      options.standard,
+      DatatypesJSON.integer.name,
+      DatatypesJSON.integer.description,
+    );
+
+    this.value = value;
+    this.dim = options.dim;
+  }
+
+  protected build(v: number): FInteger {
+    return new FInteger(v, {
+      ...FInteger.DefaultOptions,
+      standard: this._standard,
+      kind: this._kind,
+    });
+  }
+
+  public static get DefaultOptions(): FIntegerArrayOptions {
+    return {
+      standard: FortranStandard.f77,
+      name: DatatypesJSON.integer.name,
+      description: DatatypesJSON.integer.description,
+      dim: [1],
     };
   }
 }
@@ -285,11 +516,11 @@ export class FLogical extends FIntrinsic<boolean> {
     return this._value;
   }
 
-  private set kind(v: LogicalKind | undefined) {
-    if (v !== undefined) {
-      assert([1, 2, 4, 8].includes(v));
+  private set kind(k: LogicalKind | undefined) {
+    if (k !== undefined) {
+      assert([1, 2, 4, 8].includes(k));
     }
-    this._kind = v;
+    this._kind = k;
   }
 
   public get kind(): LogicalKind | undefined {
@@ -301,6 +532,45 @@ export class FLogical extends FIntrinsic<boolean> {
       standard: FortranStandard.f77,
       name: DatatypesJSON.logical.name,
       description: DatatypesJSON.logical.description,
+    };
+  }
+}
+
+type FLogicalArrayOptions = {
+  kind?: LogicalKind;
+} & FArrayOptions;
+
+export class FLogicalArray extends FArray<boolean> {
+  private _kind: LogicalKind | undefined;
+
+  public constructor(
+    value: FortranArray<boolean>,
+    options: FLogicalArrayOptions = FLogicalArray.DefaultOptions,
+  ) {
+    super(
+      options.standard,
+      DatatypesJSON.logical.name,
+      DatatypesJSON.logical.description,
+    );
+
+    this.value = value;
+    this.dim = options.dim;
+  }
+
+  protected build(v: boolean): FLogical {
+    return new FLogical(v, {
+      ...FLogical.DefaultOptions,
+      standard: this._standard,
+      kind: this._kind,
+    });
+  }
+
+  public static get DefaultOptions(): FLogicalArrayOptions {
+    return {
+      standard: FortranStandard.f77,
+      name: DatatypesJSON.logical.name,
+      description: DatatypesJSON.logical.description,
+      dim: [1],
     };
   }
 }
@@ -345,11 +615,11 @@ export class FReal extends FIntrinsic<number> {
     return this._value;
   }
 
-  private set kind(v: RealKind | undefined) {
-    if (v !== undefined) {
-      assert([4, 8, 16].includes(v));
+  private set kind(k: RealKind | undefined) {
+    if (k !== undefined) {
+      assert([4, 8, 16].includes(k));
     }
-    this._kind = v;
+    this._kind = k;
   }
 
   public get kind(): RealKind | undefined {
@@ -361,6 +631,45 @@ export class FReal extends FIntrinsic<number> {
       standard: FortranStandard.f77,
       name: DatatypesJSON.real.name,
       description: DatatypesJSON.real.description,
+    };
+  }
+}
+
+type FRealArrayOptions = {
+  kind?: RealKind;
+} & FArrayOptions;
+
+export class FRealArray extends FArray<number> {
+  private _kind: RealKind | undefined;
+
+  public constructor(
+    value: FortranArray<number>,
+    options: FRealArrayOptions = FRealArray.DefaultOptions,
+  ) {
+    super(
+      options.standard,
+      DatatypesJSON.real.name,
+      DatatypesJSON.real.description,
+    );
+
+    this.value = value;
+    this.dim = options.dim;
+  }
+
+  protected build(v: number): FReal {
+    return new FReal(v, {
+      ...FReal.DefaultOptions,
+      standard: this._standard,
+      kind: this._kind,
+    });
+  }
+
+  public static get DefaultOptions(): FRealArrayOptions {
+    return {
+      standard: FortranStandard.f77,
+      name: DatatypesJSON.real.name,
+      description: DatatypesJSON.real.description,
+      dim: [1],
     };
   }
 }
