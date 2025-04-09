@@ -1,18 +1,6 @@
 import assert from 'assert';
+import { isAscii, isRangedInteger } from './utils';
 import DatatypesJSON from '../assets/datatypes.json' assert { type: 'json' };
-
-function isRangedInteger(v: number, bits: number, signed: boolean): boolean {
-  assert(Number.isInteger(v));
-  const min = signed ? -(1 << (bits - 1)) : 0;
-  const max = signed ? 1 << (bits - 1) : 1 << bits;
-  return v >= min && v < max;
-}
-
-function isAscii(c: string): boolean {
-  assert(typeof c === 'string');
-  assert(c.length === 1);
-  return isRangedInteger(c.charCodeAt(0), 8, false);
-}
 
 interface FDataOptions {
   standard: FortranStandard;
@@ -20,15 +8,9 @@ interface FDataOptions {
   description: string;
 }
 
-interface FDataDisplayOptions {
-  standard: string;
-  name: string;
-  description: string;
-}
-
 type FIntrinsicOptions = FDataOptions;
 
-abstract class FIntrinsic<T> implements FDataDisplayOptions {
+abstract class FIntrinsic<T> implements FDataOptions {
   protected _value: T;
 
   public constructor(
@@ -37,7 +19,7 @@ abstract class FIntrinsic<T> implements FDataDisplayOptions {
     protected _description: string,
   ) {}
 
-  public get standard(): string {
+  public get standard(): FortranStandard {
     return this._standard;
   }
 
@@ -57,9 +39,7 @@ type FArrayOptions = {
   dim: Dimension;
 } & FDataOptions;
 
-export abstract class FArray<P, T = FIntrinsic<P>>
-  implements FDataDisplayOptions
-{
+abstract class FArray<P, T = FIntrinsic<P>> implements FDataOptions {
   protected _value: FortranArray<T>;
   private _dim: Dimension;
 
@@ -69,7 +49,7 @@ export abstract class FArray<P, T = FIntrinsic<P>>
     protected _description: string,
   ) {}
 
-  public get standard(): string {
+  public get standard(): FortranStandard {
     return this._standard;
   }
 
