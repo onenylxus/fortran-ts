@@ -2,7 +2,7 @@ export function isRangedInteger(
   value: unknown,
   bits: number,
   signed: boolean,
-): boolean {
+): value is number {
   if (!Number.isInteger(value)) {
     return false;
   }
@@ -12,14 +12,14 @@ export function isRangedInteger(
   return num >= min && num < max;
 }
 
-export function isAscii(value: unknown): boolean {
+export function isAscii(value: unknown): value is string {
   if (typeof value !== 'string' || value.length !== 1) {
     return false;
   }
   return isRangedInteger(value.charCodeAt(0), 8, false);
 }
 
-export function isComplex(value: unknown): boolean {
+export function isComplex(value: unknown): value is Complex {
   return (
     typeof value === 'object' &&
     value !== null &&

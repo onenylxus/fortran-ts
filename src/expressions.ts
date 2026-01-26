@@ -1,66 +1,16 @@
-import { FByte, FComplex, FInteger, FLogical, FReal } from './datatypes';
-
-export type ArithmeticExpression = FByte | FComplex | FInteger | FLogical | FReal;
-
-function _getRank(a: ArithmeticExpression): number {
-  if (a instanceof FByte) {
-    return 1;
-  } else if (a instanceof FComplex) {
-    switch (a.kind) {
-      case 8:
-        return 9;
-      case 16:
-        return 10;
-      case 32:
-        return 11;
-      default:
-        return 9;
-    }
-  } else if (a instanceof FInteger) {
-    switch (a.kind) {
-      case 2:
-        return 4;
-      case 4:
-        return 5;
-      case 8:
-        return 6;
-      default:
-        return 5;
-    }
-  } else if (a instanceof FLogical) {
-    switch (a.kind) {
-      case 1:
-        return 1;
-      case 2:
-        return 2;
-      case 4:
-        return 3;
-      case 8:
-        return 6;
-      default:
-        return 3;
-    }
-  } else if (a instanceof FReal) {
-    switch (a.kind) {
-      case 4:
-        return 6;
-      case 8:
-        return 7;
-      case 16:
-        return 8;
-      default:
-        return 6;
-    }
-  }
-}
-
-function byteToNumber(e: FByte): number {
-  return typeof e.value === 'string' ? e.value.charCodeAt(0) : +e.value;
-}
+import {
+  ArithmeticExpression,
+  FByte,
+  FComplex,
+  FInteger,
+  FLogical,
+  FReal,
+} from './datatypes';
+import { byteToNumber } from './mixed';
 
 export function int(e: ArithmeticExpression | number): FInteger {
   if (e instanceof FByte) {
-    return new FInteger(byteToNumber(e), {
+    return new FInteger(byteToNumber(e.value), {
       ...FInteger.DefaultOptions,
       standard: e.standard,
       kind: 4,
@@ -99,7 +49,7 @@ export function int(e: ArithmeticExpression | number): FInteger {
 
 export function real(e: ArithmeticExpression): FReal {
   if (e instanceof FByte) {
-    return new FReal(byteToNumber(e), {
+    return new FReal(byteToNumber(e.value), {
       ...FReal.DefaultOptions,
       standard: e.standard,
       kind: 4,
@@ -137,7 +87,7 @@ export function real(e: ArithmeticExpression): FReal {
 
 export function dble(e: ArithmeticExpression): FReal {
   if (e instanceof FByte) {
-    return new FReal(byteToNumber(e), {
+    return new FReal(byteToNumber(e.value), {
       ...FReal.DefaultOptions,
       standard: e.standard,
       kind: 8,
@@ -175,7 +125,7 @@ export function dble(e: ArithmeticExpression): FReal {
 
 export function qreal(e: ArithmeticExpression): FReal {
   if (e instanceof FByte) {
-    return new FReal(byteToNumber(e), {
+    return new FReal(byteToNumber(e.value), {
       ...FReal.DefaultOptions,
       standard: e.standard,
       kind: 16,
@@ -214,7 +164,7 @@ export function qreal(e: ArithmeticExpression): FReal {
 export function cmplx(e: ArithmeticExpression): FComplex {
   if (e instanceof FByte) {
     return new FComplex(
-      { r: byteToNumber(e), i: 0 },
+      { r: byteToNumber(e.value), i: 0 },
       {
         ...FComplex.DefaultOptions,
         standard: e.standard,
@@ -267,7 +217,7 @@ export function cmplx(e: ArithmeticExpression): FComplex {
 export function dcmplx(e: ArithmeticExpression): FComplex {
   if (e instanceof FByte) {
     return new FComplex(
-      { r: byteToNumber(e), i: 0 },
+      { r: byteToNumber(e.value), i: 0 },
       {
         ...FComplex.DefaultOptions,
         standard: e.standard,
@@ -317,7 +267,7 @@ export function dcmplx(e: ArithmeticExpression): FComplex {
 export function qcmplx(e: ArithmeticExpression): FComplex {
   if (e instanceof FByte) {
     return new FComplex(
-      { r: byteToNumber(e), i: 0 },
+      { r: byteToNumber(e.value), i: 0 },
       {
         ...FComplex.DefaultOptions,
         standard: e.standard,

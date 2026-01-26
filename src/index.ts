@@ -1,5 +1,6 @@
 import DatatypesJSON from '../assets/datatypes.json' assert { type: 'json' };
 import {
+  ArithmeticExpression,
   FByte,
   FByteArray,
   FCharacter,
@@ -13,22 +14,13 @@ import {
   FReal,
   FRealArray,
 } from './datatypes';
-import {
-  ArithmeticExpression,
-  cmplx,
-  dble,
-  dcmplx,
-  int,
-  qcmplx,
-  qreal,
-  real,
-} from './expressions';
+import { cmplx, dble, dcmplx, int, qcmplx, qreal, real } from './expressions';
 import { isComplex } from './utils';
 
 export default class Fortran {
   public static BYTE(value: Byte): FByte;
   public static BYTE(value: FortranArray<Byte>): FByteArray;
-  public static BYTE(value: Byte | FortranArray<Byte>) {
+  public static BYTE(value: Byte | FortranArray<Byte>): FByte | FByteArray {
     if (Array.isArray(value)) {
       return new FByteArray(value);
     }
@@ -40,7 +32,10 @@ export default class Fortran {
     value: FortranArray<string>,
     len?: number,
   ): FCharacterArray;
-  public static CHARACTER(value: string | FortranArray<string>, len?: number) {
+  public static CHARACTER(
+    value: string | FortranArray<string>,
+    len?: number,
+  ): FCharacter | FCharacterArray {
     if (Array.isArray(value)) {
       return new FCharacterArray(value, {
         ...FCharacterArray.DefaultOptions,
@@ -59,7 +54,7 @@ export default class Fortran {
   public static CMPLX(
     value: Complex | ArithmeticExpression | FortranArray<Complex>,
     kind?: ComplexKind,
-  ) {
+  ): FComplex | FComplexArray {
     if (Array.isArray(value)) {
       return new FComplexArray(value, {
         ...FComplexArray.DefaultOptions,
@@ -81,7 +76,7 @@ export default class Fortran {
   public static DBLE(value: FortranArray<number>): FRealArray;
   public static DBLE(
     value: number | ArithmeticExpression | FortranArray<number>,
-  ) {
+  ): FReal | FRealArray {
     if (Array.isArray(value)) {
       return new FRealArray(value, {
         ...FRealArray.DefaultOptions,
@@ -107,7 +102,7 @@ export default class Fortran {
   public static DCMPLX(value: FortranArray<Complex>): FComplexArray;
   public static DCMPLX(
     value: Complex | ArithmeticExpression | FortranArray<Complex>,
-  ) {
+  ): FComplex | FComplexArray {
     if (Array.isArray(value)) {
       return new FComplexArray(value, {
         ...FComplexArray.DefaultOptions,
@@ -137,7 +132,7 @@ export default class Fortran {
   public static INT(
     value: number | ArithmeticExpression | FortranArray<number>,
     kind?: IntegerKind,
-  ) {
+  ): FInteger | FIntegerArray {
     if (Array.isArray(value)) {
       return new FIntegerArray(value, {
         ...FIntegerArray.DefaultOptions,
@@ -159,7 +154,7 @@ export default class Fortran {
   public static LOGICAL(
     value: boolean | FortranArray<boolean>,
     kind?: LogicalKind,
-  ) {
+  ): FLogical | FLogicalArray {
     if (Array.isArray(value)) {
       return new FLogicalArray(value, {
         ...FLogicalArray.DefaultOptions,
@@ -174,7 +169,7 @@ export default class Fortran {
   public static QCMPLX(value: FortranArray<Complex>): FComplexArray;
   public static QCMPLX(
     value: Complex | ArithmeticExpression | FortranArray<Complex>,
-  ) {
+  ): FComplex | FComplexArray {
     if (Array.isArray(value)) {
       return new FComplexArray(value, {
         ...FComplexArray.DefaultOptions,
@@ -195,7 +190,7 @@ export default class Fortran {
   public static QREAL(value: FortranArray<number>): FRealArray;
   public static QREAL(
     value: number | ArithmeticExpression | FortranArray<number>,
-  ) {
+  ): FReal | FRealArray {
     if (Array.isArray(value)) {
       return new FRealArray(value, {
         ...FRealArray.DefaultOptions,
@@ -217,7 +212,7 @@ export default class Fortran {
   public static REAL(
     value: number | ArithmeticExpression | FortranArray<number>,
     kind?: RealKind,
-  ) {
+  ): FReal | FRealArray {
     if (Array.isArray(value)) {
       return new FRealArray(value, { ...FRealArray.DefaultOptions, kind });
     }

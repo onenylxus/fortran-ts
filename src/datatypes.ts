@@ -10,6 +10,13 @@ interface FDataOptions {
 
 type FIntrinsicOptions = FDataOptions;
 
+export type ArithmeticExpression =
+  | FByte
+  | FComplex
+  | FInteger
+  | FLogical
+  | FReal;
+
 abstract class FIntrinsic<T> implements FDataOptions {
   protected _value: T;
 
@@ -199,10 +206,7 @@ export class FCharacter extends FIntrinsic<string> {
   }
 
   public override get name(): string {
-    if (this.len === undefined) {
-      return super.name;
-    }
-    return super.name.concat('*', this.len.toString());
+    return this.len ? `${super.name}*${this.len}` : super.name;
   }
 
   public set value(v: string) {
@@ -292,10 +296,7 @@ export class FComplex extends FIntrinsic<Complex> {
   }
 
   public override get name(): string {
-    if (this.kind === undefined) {
-      return super.name;
-    }
-    return super.name.concat('*', this.kind.toString());
+    return this.kind ? `${super.name}*${this.kind}` : super.name;
   }
 
   public set value(v: Complex) {
@@ -389,10 +390,7 @@ export class FInteger extends FIntrinsic<number> {
   }
 
   public override get name(): string {
-    if (this.kind === undefined) {
-      return super.name;
-    }
-    return super.name.concat('*', this.kind.toString());
+    return this.kind ? `${super.name}*${this.kind}` : super.name;
   }
 
   public set value(v: number) {
@@ -481,10 +479,7 @@ export class FLogical extends FIntrinsic<boolean> {
   }
 
   public override get name(): string {
-    if (this.kind === undefined) {
-      return super.name;
-    }
-    return super.name.concat('*', this.kind.toString());
+    return this.kind ? `${super.name}*${this.kind}` : super.name;
   }
 
   public set value(v: boolean) {
@@ -577,10 +572,7 @@ export class FReal extends FIntrinsic<number> {
   }
 
   public override get name(): string {
-    if (this.kind === undefined) {
-      return super.name;
-    }
-    return super.name.concat('*', this.kind.toString());
+    return this.kind ? `${super.name}*${this.kind}` : super.name;
   }
 
   public set value(v: number) {
