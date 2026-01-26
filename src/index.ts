@@ -1,4 +1,4 @@
-import DatatypesJSON from '../assets/datatypes.json' assert { type: 'json' };
+import DatatypesJSON from '../assets/datatypes.json' with { type: 'json' };
 import {
   ArithmeticExpression,
   FByte,
@@ -15,14 +15,19 @@ import {
   FRealArray,
 } from './datatypes';
 import { cmplx, dble, dcmplx, int, qcmplx, qreal, real } from './expressions';
-import { isComplex } from './utils';
+import { Mix } from './mixed';
+import { add } from './operands';
+import { getDim, isComplex } from './utils';
 
 export default class Fortran {
   public static BYTE(value: Byte): FByte;
   public static BYTE(value: FortranArray<Byte>): FByteArray;
   public static BYTE(value: Byte | FortranArray<Byte>): FByte | FByteArray {
     if (Array.isArray(value)) {
-      return new FByteArray(value);
+      return new FByteArray(value, {
+        ...FByteArray.DefaultOptions,
+        dim: getDim(value),
+      });
     }
     return new FByte(value);
   }
@@ -40,6 +45,7 @@ export default class Fortran {
       return new FCharacterArray(value, {
         ...FCharacterArray.DefaultOptions,
         len,
+        dim: getDim(value),
       });
     }
     return new FCharacter(value, { ...FCharacter.DefaultOptions, len });
@@ -59,6 +65,7 @@ export default class Fortran {
       return new FComplexArray(value, {
         ...FComplexArray.DefaultOptions,
         kind,
+        dim: getDim(value),
       });
     }
     if (isComplex(value)) {
@@ -83,6 +90,7 @@ export default class Fortran {
         name: DatatypesJSON.doublePrecision.name,
         description: DatatypesJSON.doublePrecision.description,
         kind: 8,
+        dim: getDim(value),
       });
     }
     if (typeof value === 'number') {
@@ -109,6 +117,7 @@ export default class Fortran {
         name: DatatypesJSON.doubleComplex.name,
         description: DatatypesJSON.doubleComplex.description,
         kind: 16,
+        dim: getDim(value),
       });
     }
     if (isComplex(value)) {
@@ -137,6 +146,7 @@ export default class Fortran {
       return new FIntegerArray(value, {
         ...FIntegerArray.DefaultOptions,
         kind,
+        dim: getDim(value),
       });
     }
     if (typeof value === 'number') {
@@ -159,6 +169,7 @@ export default class Fortran {
       return new FLogicalArray(value, {
         ...FLogicalArray.DefaultOptions,
         kind,
+        dim: getDim(value),
       });
     }
     return new FLogical(value, { ...FLogical.DefaultOptions, kind });
@@ -174,6 +185,7 @@ export default class Fortran {
       return new FComplexArray(value, {
         ...FComplexArray.DefaultOptions,
         kind: 32,
+        dim: getDim(value),
       });
     }
     if (isComplex(value)) {
@@ -195,6 +207,7 @@ export default class Fortran {
       return new FRealArray(value, {
         ...FRealArray.DefaultOptions,
         kind: 16,
+        dim: getDim(value),
       });
     }
     if (typeof value === 'number') {
@@ -214,11 +227,22 @@ export default class Fortran {
     kind?: RealKind,
   ): FReal | FRealArray {
     if (Array.isArray(value)) {
-      return new FRealArray(value, { ...FRealArray.DefaultOptions, kind });
+      return new FRealArray(value, {
+        ...FRealArray.DefaultOptions,
+        kind,
+        dim: getDim(value),
+      });
     }
     if (typeof value === 'number') {
       return new FReal(value, { ...FReal.DefaultOptions, kind });
     }
     return real(value);
+  }
+
+  public static ADD<
+    A extends ArithmeticExpression,
+    B extends ArithmeticExpression,
+  >(a: A, b: B): Mix<A, B> {
+    return add(a, b);
   }
 }

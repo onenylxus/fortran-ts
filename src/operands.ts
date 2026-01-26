@@ -21,7 +21,6 @@ export function add<
       { ...FByte.DefaultOptions },
     ) as Mix<A, B>;
   }
-
   if (c instanceof FComplex && d instanceof FComplex) {
     return new FComplex(
       {
@@ -31,21 +30,18 @@ export function add<
       { ...FComplex.DefaultOptions, kind: kind as ComplexKind },
     ) as Mix<A, B>;
   }
-
   if (c instanceof FInteger && d instanceof FInteger) {
     return new FInteger(c.value + d.value, {
       ...FInteger.DefaultOptions,
       kind: kind as IntegerKind,
     }) as Mix<A, B>;
   }
-
   if (c instanceof FLogical && d instanceof FLogical) {
     return new FLogical(c.value || d.value, {
       ...FLogical.DefaultOptions,
       kind: kind as LogicalKind,
     }) as Mix<A, B>;
   }
-
   if (c instanceof FReal && d instanceof FReal) {
     return new FReal(c.value + d.value, {
       ...FReal.DefaultOptions,

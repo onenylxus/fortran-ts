@@ -8,6 +8,12 @@ import {
 } from './datatypes';
 import assert from 'assert';
 import { isAscii } from './utils';
+import {
+  assertComplexKind,
+  assertIntegerKind,
+  assertLogicalKind,
+  assertRealKind,
+} from './error';
 
 // prettier-ignore
 export type Mix<
@@ -60,20 +66,40 @@ export function numberToComplex(n: number): Complex {
 }
 
 export function getKind(e: ArithmeticExpression): number {
-  if (e instanceof FByte) return 1;
-  if (e instanceof FComplex) return e.kind ?? 8;
-  if (e instanceof FInteger) return e.kind ?? 4;
-  if (e instanceof FLogical) return e.kind ?? 4;
-  if (e instanceof FReal) return e.kind ?? 4;
+  if (e instanceof FByte) {
+    return 1;
+  }
+  if (e instanceof FComplex) {
+    return e.kind ?? 8;
+  }
+  if (e instanceof FInteger) {
+    return e.kind ?? 4;
+  }
+  if (e instanceof FLogical) {
+    return e.kind ?? 4;
+  }
+  if (e instanceof FReal) {
+    return e.kind ?? 4;
+  }
 }
 
 function getRank(e: ArithmeticExpression): number {
   const k = getKind(e);
-  if (e instanceof FByte) return 1;
-  if (e instanceof FComplex) return 9 + Math.log2(k / 8);
-  if (e instanceof FInteger) return 4 + Math.log2(k / 4);
-  if (e instanceof FLogical) return k === 8 ? 6 : 1 + Math.log2(k);
-  if (e instanceof FReal) return 6 + Math.log2(k / 4);
+  if (e instanceof FByte) {
+    return 1;
+  }
+  if (e instanceof FComplex) {
+    return 9 + Math.log2(k / 8);
+  }
+  if (e instanceof FInteger) {
+    return 4 + Math.log2(k / 4);
+  }
+  if (e instanceof FLogical) {
+    return k === 8 ? 6 : 1 + Math.log2(k);
+  }
+  if (e instanceof FReal) {
+    return 6 + Math.log2(k / 4);
+  }
 }
 
 function promote<T extends ArithmeticExpression>(
@@ -117,25 +143,22 @@ export function mix<
 
   if (rankA > rankB) {
     if (a instanceof FComplex) {
-      assert([8, 16, 32].includes(resultKind));
+      assertComplexKind(resultKind);
       c = promote(a, FComplex, resultKind) as Mix<A, B>;
       d = promote(b, FComplex, resultKind) as Mix<A, B>;
     }
-
     if (a instanceof FInteger) {
-      assert([2, 4, 8].includes(resultKind));
+      assertIntegerKind(resultKind);
       c = promote(a, FInteger, resultKind) as Mix<A, B>;
       d = promote(b, FInteger, resultKind) as Mix<A, B>;
     }
-
     if (a instanceof FLogical) {
-      assert([1, 2, 4, 8].includes(resultKind));
+      assertLogicalKind(resultKind);
       c = promote(a, FLogical, resultKind) as Mix<A, B>;
       d = promote(b, FLogical, resultKind) as Mix<A, B>;
     }
-
     if (a instanceof FReal) {
-      assert([4, 8, 16].includes(resultKind));
+      assertRealKind(resultKind);
       c = promote(a, FReal, resultKind) as Mix<A, B>;
       d = promote(b, FReal, resultKind) as Mix<A, B>;
     }
@@ -143,25 +166,22 @@ export function mix<
 
   if (rankA < rankB) {
     if (b instanceof FComplex) {
-      assert([8, 16, 32].includes(resultKind));
+      assertComplexKind(resultKind);
       c = promote(a, FComplex, resultKind) as Mix<A, B>;
       d = promote(b, FComplex, resultKind) as Mix<A, B>;
     }
-
     if (b instanceof FInteger) {
-      assert([2, 4, 8].includes(resultKind));
+      assertIntegerKind(resultKind);
       c = promote(a, FInteger, resultKind) as Mix<A, B>;
       d = promote(b, FInteger, resultKind) as Mix<A, B>;
     }
-
     if (b instanceof FLogical) {
-      assert([1, 2, 4, 8].includes(resultKind));
+      assertLogicalKind(resultKind);
       c = promote(a, FLogical, resultKind) as Mix<A, B>;
       d = promote(b, FLogical, resultKind) as Mix<A, B>;
     }
-
     if (b instanceof FReal) {
-      assert([4, 8, 16].includes(resultKind));
+      assertRealKind(resultKind);
       c = promote(a, FReal, resultKind) as Mix<A, B>;
       d = promote(b, FReal, resultKind) as Mix<A, B>;
     }

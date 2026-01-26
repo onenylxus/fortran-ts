@@ -1,6 +1,22 @@
 import assert from 'assert';
 import { isAscii, isRangedInteger } from './utils';
-import DatatypesJSON from '../assets/datatypes.json' assert { type: 'json' };
+import DatatypesJSON from '../assets/datatypes.json' with { type: 'json' };
+import {
+  assertComplexKind,
+  assertIntegerKind,
+  assertLogicalKind,
+  assertRealKind,
+} from './error';
+
+enum FortranStandard {
+  f66 = 'Fortran66',
+  f77 = 'Fortran77',
+  f90 = 'Fortran90',
+  f95 = 'Fortran95',
+  f03 = 'Fortran2003',
+  f08 = 'Fortran2008',
+  f18 = 'Fortran2018',
+}
 
 interface FDataOptions {
   standard: FortranStandard;
@@ -140,8 +156,9 @@ export class FByte extends FIntrinsic<Byte> {
       this._value = v;
     } else if (typeof v === 'boolean') {
       this._value = v;
+    } else {
+      assert.fail();
     }
-    assert.fail();
   }
 
   public get value(): Byte {
@@ -170,8 +187,8 @@ export class FByteArray extends FArray<Byte> {
       DatatypesJSON.byte.description,
     );
 
-    this.value = value;
     this.dim = options.dim;
+    this.value = value;
   }
 
   protected build(v: Byte): FByte {
@@ -201,8 +218,8 @@ export class FCharacter extends FIntrinsic<string> {
   ) {
     super(options.standard, options.name, options.description);
 
-    this.value = value;
     this.len = options.len;
+    this.value = value;
   }
 
   public override get name(): string {
@@ -210,8 +227,8 @@ export class FCharacter extends FIntrinsic<string> {
   }
 
   public set value(v: string) {
-    assert(isAscii(v));
-    this._value = v;
+    assert(v.split('').every((c) => isAscii(c)));
+    this._value = v.substring(0, this.len);
   }
 
   public get value(): string {
@@ -244,7 +261,7 @@ type FCharacterArrayOptions = {
 } & FArrayOptions;
 
 export class FCharacterArray extends FArray<string> {
-  private _len: number | undefined;
+  private _elementLen: number | undefined;
 
   public constructor(
     value: FortranArray<string>,
@@ -256,15 +273,16 @@ export class FCharacterArray extends FArray<string> {
       DatatypesJSON.character.description,
     );
 
-    this.value = value;
+    this._elementLen = options.len;
     this.dim = options.dim;
+    this.value = value;
   }
 
   protected build(v: string): FCharacter {
     return new FCharacter(v, {
       ...FCharacter.DefaultOptions,
       standard: this._standard,
-      len: this._len,
+      len: this._elementLen,
     });
   }
 
@@ -291,8 +309,8 @@ export class FComplex extends FIntrinsic<Complex> {
   ) {
     super(options.standard, options.name, options.description);
 
-    this.value = value;
     this.kind = options.kind;
+    this.value = value;
   }
 
   public override get name(): string {
@@ -302,20 +320,19 @@ export class FComplex extends FIntrinsic<Complex> {
   public set value(v: Complex) {
     assert('r' in v && typeof v.r === 'number');
     assert('i' in v && typeof v.i === 'number');
-    if (this.kind === undefined || this.kind === 8) {
-      assert(Math.fround(v.r) === v.r);
-      assert(Math.fround(v.i) === v.i);
-    }
     this._value = v;
   }
 
   public get value(): Complex {
+    if (this.kind === undefined || this.kind === 8) {
+      return { r: Math.fround(this._value.r), i: Math.fround(this._value.i) };
+    }
     return this._value;
   }
 
   private set kind(k: ComplexKind | undefined) {
     if (k !== undefined) {
-      assert([8, 16, 32].includes(k));
+      assertComplexKind(k);
     }
     this._kind = k;
   }
@@ -338,7 +355,7 @@ type FComplexArrayOptions = {
 } & FArrayOptions;
 
 export class FComplexArray extends FArray<Complex> {
-  private _kind: ComplexKind | undefined;
+  private _elementKind: ComplexKind | undefined;
 
   public constructor(
     value: FortranArray<Complex>,
@@ -350,15 +367,16 @@ export class FComplexArray extends FArray<Complex> {
       DatatypesJSON.complex.description,
     );
 
-    this.value = value;
+    this._elementKind = options.kind;
     this.dim = options.dim;
+    this.value = value;
   }
 
   protected build(v: Complex): FComplex {
     return new FComplex(v, {
       ...FComplex.DefaultOptions,
       standard: this._standard,
-      kind: this._kind,
+      kind: this._elementKind,
     });
   }
 
@@ -385,8 +403,8 @@ export class FInteger extends FIntrinsic<number> {
   ) {
     super(options.standard, options.name, options.description);
 
-    this.value = value;
     this.kind = options.kind;
+    this.value = value;
   }
 
   public override get name(): string {
@@ -394,7 +412,7 @@ export class FInteger extends FIntrinsic<number> {
   }
 
   public set value(v: number) {
-    assert(isRangedInteger(v, 32, true));
+    assert(isRangedInteger(v, (this.kind ?? 4) * 8, true));
     this._value = v;
   }
 
@@ -404,7 +422,7 @@ export class FInteger extends FIntrinsic<number> {
 
   private set kind(k: IntegerKind | undefined) {
     if (k !== undefined) {
-      assert([2, 4, 8].includes(k));
+      assertIntegerKind(k);
     }
     this._kind = k;
   }
@@ -427,7 +445,7 @@ type FIntegerArrayOptions = {
 } & FArrayOptions;
 
 export class FIntegerArray extends FArray<number> {
-  private _kind: IntegerKind | undefined;
+  private _elementKind: IntegerKind | undefined;
 
   public constructor(
     value: FortranArray<number>,
@@ -439,15 +457,16 @@ export class FIntegerArray extends FArray<number> {
       DatatypesJSON.integer.description,
     );
 
-    this.value = value;
+    this._elementKind = options.kind;
     this.dim = options.dim;
+    this.value = value;
   }
 
   protected build(v: number): FInteger {
     return new FInteger(v, {
       ...FInteger.DefaultOptions,
       standard: this._standard,
-      kind: this._kind,
+      kind: this._elementKind,
     });
   }
 
@@ -474,8 +493,8 @@ export class FLogical extends FIntrinsic<boolean> {
   ) {
     super(options.standard, options.name, options.description);
 
-    this.value = value;
     this.kind = options.kind;
+    this.value = value;
   }
 
   public override get name(): string {
@@ -493,7 +512,7 @@ export class FLogical extends FIntrinsic<boolean> {
 
   private set kind(k: LogicalKind | undefined) {
     if (k !== undefined) {
-      assert([1, 2, 4, 8].includes(k));
+      assertLogicalKind(k);
     }
     this._kind = k;
   }
@@ -516,7 +535,7 @@ type FLogicalArrayOptions = {
 } & FArrayOptions;
 
 export class FLogicalArray extends FArray<boolean> {
-  private _kind: LogicalKind | undefined;
+  private _elementKind: LogicalKind | undefined;
 
   public constructor(
     value: FortranArray<boolean>,
@@ -528,15 +547,16 @@ export class FLogicalArray extends FArray<boolean> {
       DatatypesJSON.logical.description,
     );
 
-    this.value = value;
+    this._elementKind = options.kind;
     this.dim = options.dim;
+    this.value = value;
   }
 
   protected build(v: boolean): FLogical {
     return new FLogical(v, {
       ...FLogical.DefaultOptions,
       standard: this._standard,
-      kind: this._kind,
+      kind: this._elementKind,
     });
   }
 
@@ -567,8 +587,8 @@ export class FReal extends FIntrinsic<number> {
       DatatypesJSON.real.description,
     );
 
-    this.value = value;
     this.kind = options.kind;
+    this.value = value;
   }
 
   public override get name(): string {
@@ -577,19 +597,19 @@ export class FReal extends FIntrinsic<number> {
 
   public set value(v: number) {
     assert(typeof v === 'number');
-    if (this.kind === undefined || this.kind === 4) {
-      assert(Math.fround(v) === v);
-    }
     this._value = v;
   }
 
   public get value(): number {
+    if (this.kind === undefined || this.kind === 4) {
+      return Math.fround(this._value);
+    }
     return this._value;
   }
 
   private set kind(k: RealKind | undefined) {
     if (k !== undefined) {
-      assert([4, 8, 16].includes(k));
+      assertRealKind(k);
     }
     this._kind = k;
   }
@@ -612,7 +632,7 @@ type FRealArrayOptions = {
 } & FArrayOptions;
 
 export class FRealArray extends FArray<number> {
-  private _kind: RealKind | undefined;
+  private _elementKind: RealKind | undefined;
 
   public constructor(
     value: FortranArray<number>,
@@ -624,15 +644,16 @@ export class FRealArray extends FArray<number> {
       DatatypesJSON.real.description,
     );
 
-    this.value = value;
+    this._elementKind = options.kind;
     this.dim = options.dim;
+    this.value = value;
   }
 
   protected build(v: number): FReal {
     return new FReal(v, {
       ...FReal.DefaultOptions,
       standard: this._standard,
-      kind: this._kind,
+      kind: this._elementKind,
     });
   }
 
