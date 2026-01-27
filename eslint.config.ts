@@ -45,6 +45,7 @@ export default [
           ignoreRestSiblings: true,
         },
       ],
+      curly: ['error', 'all'],
     },
   },
 ];

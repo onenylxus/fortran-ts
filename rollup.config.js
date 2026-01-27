@@ -1,6 +1,7 @@
 // Import
 import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
+import nodePolyfills from 'rollup-plugin-polyfill-node';
 import resolve from '@rollup/plugin-node-resolve';
 import terser from '@rollup/plugin-terser';
 import typescript from '@rollup/plugin-typescript';
@@ -17,6 +18,7 @@ export default {
   plugins: [
     commonjs(),
     json({ compact: true }),
+    nodePolyfills(),
     resolve({ preferBuiltins: true }),
     typescript({ outDir: 'dist' }),
     terser(),

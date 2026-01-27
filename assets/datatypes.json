@@ -1,0 +1,38 @@
+{
+  "array": {
+    "name": "ARRAY",
+    "description": ""
+  },
+  "byte": {
+    "name": "BYTE",
+    "description": ""
+  },
+  "character": {
+    "name": "CHARACTER",
+    "description": ""
+  },
+  "complex": {
+    "name": "COMPLEX",
+    "description": ""
+  },
+  "doubleComplex": {
+    "name": "DOUBLE COMPLEX",
+    "description": ""
+  },
+  "doublePrecision": {
+    "name": "DOUBLE PRECISION",
+    "description": ""
+  },
+  "integer": {
+    "name": "INTEGER",
+    "description": ""
+  },
+  "logical": {
+    "name": "LOGICAL",
+    "description": ""
+  },
+  "real": {
+    "name": "REAL",
+    "description": ""
+  }
+}
