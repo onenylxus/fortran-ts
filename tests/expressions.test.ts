@@ -27,14 +27,14 @@ describe('BYTE', () => {
     const byte = Fortran.BYTE(97);
 
     expect(byte).toBeInstanceOf(FByte);
-    expect(byte.value).toStrictEqual(97);
+    expect(byte.value).toStrictEqual('a');
   });
 
   test('from boolean value', () => {
     const byte = Fortran.BYTE(true);
 
     expect(byte).toBeInstanceOf(FByte);
-    expect(byte.value).toStrictEqual(true);
+    expect(byte.value).toStrictEqual('\x01');
   });
 
   test('from array of string values', () => {
@@ -56,9 +56,9 @@ describe('BYTE', () => {
     assert(byteArray instanceof FByteArray);
     expect(byteArray.dim).toStrictEqual([3]);
 
-    expect(byteArray.value[1]).toStrictEqual(97);
-    expect(byteArray.value[2]).toStrictEqual(98);
-    expect(byteArray.value[3]).toStrictEqual(99);
+    expect(byteArray.value[1]).toStrictEqual('a');
+    expect(byteArray.value[2]).toStrictEqual('b');
+    expect(byteArray.value[3]).toStrictEqual('c');
   });
 
   test('from array of boolean values', () => {
@@ -68,9 +68,9 @@ describe('BYTE', () => {
     assert(byteArray instanceof FByteArray);
     expect(byteArray.dim).toStrictEqual([3]);
 
-    expect(byteArray.value[1]).toStrictEqual(true);
-    expect(byteArray.value[2]).toStrictEqual(false);
-    expect(byteArray.value[3]).toStrictEqual(true);
+    expect(byteArray.value[1]).toStrictEqual('\x01');
+    expect(byteArray.value[2]).toStrictEqual('\x00');
+    expect(byteArray.value[3]).toStrictEqual('\x01');
   });
 
   test('from array of assorted values', () => {
@@ -81,8 +81,8 @@ describe('BYTE', () => {
     expect(byteArray.dim).toStrictEqual([3]);
 
     expect(byteArray.value[1]).toStrictEqual('a');
-    expect(byteArray.value[2]).toStrictEqual(98);
-    expect(byteArray.value[3]).toStrictEqual(true);
+    expect(byteArray.value[2]).toStrictEqual('b');
+    expect(byteArray.value[3]).toStrictEqual('\x01');
   });
 
   test('from nested array of values', () => {
@@ -96,8 +96,8 @@ describe('BYTE', () => {
     expect(byteArray.dim).toStrictEqual([2, 2]);
 
     expect(byteArray.value[1][1]).toStrictEqual('a');
-    expect(byteArray.value[1][2]).toStrictEqual(98);
-    expect(byteArray.value[2][1]).toStrictEqual(true);
+    expect(byteArray.value[1][2]).toStrictEqual('b');
+    expect(byteArray.value[2][1]).toStrictEqual('\x01');
     expect(byteArray.value[2][2]).toStrictEqual('d');
   });
 });

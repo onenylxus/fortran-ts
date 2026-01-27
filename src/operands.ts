@@ -37,7 +37,7 @@ export function add<
     }) as Mix<A, B>;
   }
   if (c instanceof FLogical && d instanceof FLogical) {
-    return new FLogical(c.value || d.value, {
+    return new FLogical(Boolean(c.value || d.value), {
       ...FLogical.DefaultOptions,
       kind: kind as LogicalKind,
     }) as Mix<A, B>;

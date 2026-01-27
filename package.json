@@ -41,6 +41,7 @@
     "tsc": "tsc",
     "rollup": "rollup -c rollup.config.js",
     "lint": "eslint . --fix",
+    "watch": "jest --watch",
     "test": "jest",
     "ci": "yarn build && yarn test"
   },

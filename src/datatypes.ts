@@ -134,35 +134,45 @@ abstract class FArray<P, T = FIntrinsic<P>> implements FDataOptions {
 type FByteOptions = FIntrinsicOptions;
 
 export class FByte extends FIntrinsic<Byte> {
-  public constructor(
-    value: Byte,
-    options: FByteOptions = FByte.DefaultOptions,
-  ) {
+  public constructor(value: Byte = 0, options: Partial<FByteOptions> = {}) {
     super(
-      options.standard,
-      DatatypesJSON.byte.name,
-      DatatypesJSON.byte.description,
+      options.standard ?? FByte.DefaultOptions.standard,
+      FByte.DefaultOptions.name,
+      FByte.DefaultOptions.description,
     );
 
     this.value = value;
   }
 
   public set value(v: Byte) {
-    if (typeof v === 'string') {
-      assert(isAscii(v));
-      this._value = v;
-    } else if (typeof v === 'number') {
-      assert(isRangedInteger(v, 8, true));
-      this._value = v;
-    } else if (typeof v === 'boolean') {
-      this._value = v;
-    } else {
-      assert.fail();
+    switch (typeof v) {
+      case 'string':
+        assert(isAscii(v));
+        this._value = v;
+        break;
+      case 'number':
+        assert(isRangedInteger(v, 8, true));
+        this._value = v;
+        break;
+      case 'boolean':
+        this._value = v;
+        break;
+      default:
+        assert.fail();
     }
   }
 
   public get value(): Byte {
-    return this._value;
+    switch (typeof this._value) {
+      case 'string':
+        return this._value;
+      case 'number':
+        return String.fromCharCode(this._value);
+      case 'boolean':
+        return this._value ? '\x01' : '\x00';
+      default:
+        assert.fail();
+    }
   }
 
   public static get DefaultOptions(): FByteOptions {
@@ -178,16 +188,16 @@ type FByteArrayOptions = FArrayOptions;
 
 export class FByteArray extends FArray<Byte> {
   public constructor(
-    value: FortranArray<Byte>,
-    options: FByteArrayOptions = FByteArray.DefaultOptions,
+    value: FortranArray<Byte> = [],
+    options: Partial<FByteArrayOptions> = {},
   ) {
     super(
-      options.standard,
-      DatatypesJSON.byte.name,
-      DatatypesJSON.byte.description,
+      options.standard ?? FByteArray.DefaultOptions.standard,
+      FByteArray.DefaultOptions.name,
+      FByteArray.DefaultOptions.description,
     );
 
-    this.dim = options.dim;
+    this.dim = options.dim ?? FByteArray.DefaultOptions.dim;
     this.value = value;
   }
 
@@ -213,10 +223,14 @@ export class FCharacter extends FIntrinsic<string> {
   private _len: number | undefined;
 
   public constructor(
-    value: string,
-    options: FCharacterOptions = FCharacter.DefaultOptions,
+    value: string = ' ',
+    options: Partial<FCharacterOptions> = {},
   ) {
-    super(options.standard, options.name, options.description);
+    super(
+      options.standard ?? FCharacter.DefaultOptions.standard,
+      options.name ?? FCharacter.DefaultOptions.name,
+      options.description ?? FCharacter.DefaultOptions.description,
+    );
 
     this.len = options.len;
     this.value = value;
@@ -264,17 +278,17 @@ export class FCharacterArray extends FArray<string> {
   private _elementLen: number | undefined;
 
   public constructor(
-    value: FortranArray<string>,
-    options: FCharacterArrayOptions = FCharacterArray.DefaultOptions,
+    value: FortranArray<string> = [],
+    options: Partial<FCharacterArrayOptions> = {},
   ) {
     super(
-      options.standard,
-      DatatypesJSON.character.name,
-      DatatypesJSON.character.description,
+      options.standard ?? FCharacterArray.DefaultOptions.standard,
+      FCharacterArray.DefaultOptions.name,
+      FCharacterArray.DefaultOptions.description,
     );
 
     this._elementLen = options.len;
-    this.dim = options.dim;
+    this.dim = options.dim ?? FCharacterArray.DefaultOptions.dim;
     this.value = value;
   }
 
@@ -304,10 +318,14 @@ export class FComplex extends FIntrinsic<Complex> {
   private _kind: ComplexKind | undefined;
 
   public constructor(
-    value: Complex,
-    options: FComplexOptions = FComplex.DefaultOptions,
+    value: Complex = { r: 0, i: 0 },
+    options: Partial<FComplexOptions> = {},
   ) {
-    super(options.standard, options.name, options.description);
+    super(
+      options.standard ?? FComplex.DefaultOptions.standard,
+      options.name ?? FComplex.DefaultOptions.name,
+      options.description ?? FComplex.DefaultOptions.description,
+    );
 
     this.kind = options.kind;
     this.value = value;
@@ -318,6 +336,7 @@ export class FComplex extends FIntrinsic<Complex> {
   }
 
   public set value(v: Complex) {
+    assert(typeof v === 'object' && v !== null);
     assert('r' in v && typeof v.r === 'number');
     assert('i' in v && typeof v.i === 'number');
     this._value = v;
@@ -358,17 +377,17 @@ export class FComplexArray extends FArray<Complex> {
   private _elementKind: ComplexKind | undefined;
 
   public constructor(
-    value: FortranArray<Complex>,
-    options: FComplexArrayOptions = FComplexArray.DefaultOptions,
+    value: FortranArray<Complex> = [],
+    options: Partial<FComplexArrayOptions> = {},
   ) {
     super(
-      options.standard,
-      DatatypesJSON.complex.name,
-      DatatypesJSON.complex.description,
+      options.standard ?? FComplexArray.DefaultOptions.standard,
+      FComplexArray.DefaultOptions.name,
+      FComplexArray.DefaultOptions.description,
     );
 
     this._elementKind = options.kind;
-    this.dim = options.dim;
+    this.dim = options.dim ?? FComplexArray.DefaultOptions.dim;
     this.value = value;
   }
 
@@ -398,10 +417,14 @@ export class FInteger extends FIntrinsic<number> {
   private _kind: IntegerKind | undefined;
 
   public constructor(
-    value: number,
-    options: FIntegerOptions = FInteger.DefaultOptions,
+    value: number = 0,
+    options: Partial<FIntegerOptions> = {},
   ) {
-    super(options.standard, options.name, options.description);
+    super(
+      options.standard ?? FInteger.DefaultOptions.standard,
+      options.name ?? FInteger.DefaultOptions.name,
+      options.description ?? FInteger.DefaultOptions.description,
+    );
 
     this.kind = options.kind;
     this.value = value;
@@ -448,17 +471,17 @@ export class FIntegerArray extends FArray<number> {
   private _elementKind: IntegerKind | undefined;
 
   public constructor(
-    value: FortranArray<number>,
-    options: FIntegerArrayOptions = FIntegerArray.DefaultOptions,
+    value: FortranArray<number> = [],
+    options: Partial<FIntegerArrayOptions> = {},
   ) {
     super(
-      options.standard,
-      DatatypesJSON.integer.name,
-      DatatypesJSON.integer.description,
+      options.standard ?? FIntegerArray.DefaultOptions.standard,
+      FIntegerArray.DefaultOptions.name,
+      FIntegerArray.DefaultOptions.description,
     );
 
     this._elementKind = options.kind;
-    this.dim = options.dim;
+    this.dim = options.dim ?? FIntegerArray.DefaultOptions.dim;
     this.value = value;
   }
 
@@ -488,10 +511,14 @@ export class FLogical extends FIntrinsic<boolean> {
   private _kind: LogicalKind | undefined;
 
   public constructor(
-    value: boolean,
-    options: FLogicalOptions = FLogical.DefaultOptions,
+    value: boolean = false,
+    options: Partial<FLogicalOptions> = {},
   ) {
-    super(options.standard, options.name, options.description);
+    super(
+      options.standard ?? FLogical.DefaultOptions.standard,
+      options.name ?? FLogical.DefaultOptions.name,
+      options.description ?? FLogical.DefaultOptions.description,
+    );
 
     this.kind = options.kind;
     this.value = value;
@@ -538,17 +565,17 @@ export class FLogicalArray extends FArray<boolean> {
   private _elementKind: LogicalKind | undefined;
 
   public constructor(
-    value: FortranArray<boolean>,
-    options: FLogicalArrayOptions = FLogicalArray.DefaultOptions,
+    value: FortranArray<boolean> = [],
+    options: Partial<FLogicalArrayOptions> = {},
   ) {
     super(
-      options.standard,
-      DatatypesJSON.logical.name,
-      DatatypesJSON.logical.description,
+      options.standard ?? FLogicalArray.DefaultOptions.standard,
+      FLogicalArray.DefaultOptions.name,
+      FLogicalArray.DefaultOptions.description,
     );
 
     this._elementKind = options.kind;
-    this.dim = options.dim;
+    this.dim = options.dim ?? FLogicalArray.DefaultOptions.dim;
     this.value = value;
   }
 
@@ -577,14 +604,11 @@ type FRealOptions = {
 export class FReal extends FIntrinsic<number> {
   private _kind: RealKind | undefined;
 
-  public constructor(
-    value: number,
-    options: FRealOptions = FReal.DefaultOptions,
-  ) {
+  public constructor(value: number = 0, options: Partial<FRealOptions> = {}) {
     super(
-      options.standard,
-      DatatypesJSON.real.name,
-      DatatypesJSON.real.description,
+      options.standard ?? FReal.DefaultOptions.standard,
+      options.name ?? FReal.DefaultOptions.name,
+      options.description ?? FReal.DefaultOptions.description,
     );
 
     this.kind = options.kind;
@@ -635,17 +659,17 @@ export class FRealArray extends FArray<number> {
   private _elementKind: RealKind | undefined;
 
   public constructor(
-    value: FortranArray<number>,
-    options: FRealArrayOptions = FRealArray.DefaultOptions,
+    value: FortranArray<number> = [],
+    options: Partial<FRealArrayOptions> = {},
   ) {
     super(
-      options.standard,
-      DatatypesJSON.real.name,
-      DatatypesJSON.real.description,
+      options.standard ?? FRealArray.DefaultOptions.standard,
+      FRealArray.DefaultOptions.name,
+      FRealArray.DefaultOptions.description,
     );
 
     this._elementKind = options.kind;
-    this.dim = options.dim;
+    this.dim = options.dim ?? FRealArray.DefaultOptions.dim;
     this.value = value;
   }
 
