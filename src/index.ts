@@ -16,7 +16,7 @@ import {
 } from './datatypes';
 import { cmplx, dble, dcmplx, int, qcmplx, qreal, real } from './expressions';
 import { Mix } from './mixed';
-import { add } from './operands';
+import { add, sub } from './operands';
 import { getDim, isComplex } from './utils';
 
 export default class Fortran {
@@ -244,5 +244,12 @@ export default class Fortran {
     B extends ArithmeticExpression,
   >(a: A, b: B): Mix<A, B> {
     return add(a, b);
+  }
+
+  public static SUB<
+    A extends ArithmeticExpression,
+    B extends ArithmeticExpression,
+  >(a: A, b: B): Mix<A, B> {
+    return sub(a, b);
   }
 }
