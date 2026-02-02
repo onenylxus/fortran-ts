@@ -16,7 +16,7 @@ import {
 } from './datatypes';
 import { cmplx, dble, dcmplx, int, qcmplx, qreal, real } from './expressions';
 import { Mix } from './mixed';
-import { add, sub } from './operands';
+import { eq, ne, add, sub } from './operators';
 import { getDim, isComplex } from './utils';
 
 export default class Fortran {
@@ -238,6 +238,20 @@ export default class Fortran {
     }
     return real(value);
   }
+
+  public static EQ<
+    A extends ArithmeticExpression,
+    B extends ArithmeticExpression,
+    >(a: A, b: B): FLogical {
+      return eq(a, b);
+    }
+
+  public static NE<
+    A extends ArithmeticExpression,
+    B extends ArithmeticExpression,
+    >(a: A, b: B): FLogical {
+      return ne(a, b);
+    }
 
   public static ADD<
     A extends ArithmeticExpression,

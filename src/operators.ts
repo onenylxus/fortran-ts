@@ -8,6 +8,52 @@ import {
 } from './datatypes';
 import { byteToNumber, getKind, mix, Mix, numberToByte } from './mixed';
 
+export function eq<
+  A extends ArithmeticExpression,
+  B extends ArithmeticExpression,
+>(a: A, b: B): FLogical {
+  const { c, d } = mix(a, b);
+
+  if (c instanceof FByte && d instanceof FByte) {
+    return new FLogical(byteToNumber(c.value) === byteToNumber(d.value));
+  }
+  if (c instanceof FComplex && d instanceof FComplex) {
+    return new FLogical(c.value.r === d.value.r && c.value.i === d.value.i);
+  }
+  if (c instanceof FInteger && d instanceof FInteger) {
+    return new FLogical(c.value === d.value);
+  }
+  if (c instanceof FLogical && d instanceof FLogical) {
+    return new FLogical(c.value === d.value);
+  }
+  if (c instanceof FReal && d instanceof FReal) {
+    return new FLogical(c.value === d.value);
+  }
+}
+
+export function ne<
+  A extends ArithmeticExpression,
+  B extends ArithmeticExpression,
+>(a: A, b: B): FLogical {
+  const { c, d } = mix(a, b);
+
+  if (c instanceof FByte && d instanceof FByte) {
+    return new FLogical(byteToNumber(c.value) !== byteToNumber(d.value));
+  }
+  if (c instanceof FComplex && d instanceof FComplex) {
+    return new FLogical(c.value.r !== d.value.r || c.value.i !== d.value.i);
+  }
+  if (c instanceof FInteger && d instanceof FInteger) {
+    return new FLogical(c.value !== d.value);
+  }
+  if (c instanceof FLogical && d instanceof FLogical) {
+    return new FLogical(c.value !== d.value);
+  }
+  if (c instanceof FReal && d instanceof FReal) {
+    return new FLogical(c.value !== d.value);
+  }
+}
+
 export function add<
   A extends ArithmeticExpression,
   B extends ArithmeticExpression,
