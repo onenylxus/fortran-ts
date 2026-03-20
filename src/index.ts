@@ -19,9 +19,14 @@ import { Mix } from './mixed';
 import {
   add,
   and,
+  concat,
   div,
   eq,
   eqv,
+  ge,
+  gt,
+  le,
+  lt,
   mul,
   ne,
   neqv,
@@ -262,11 +267,59 @@ export default class Fortran {
     return eq(a, b);
   }
 
+  public static LT(a: FCharacter, b: FCharacter): FLogical;
+  public static LT<
+    A extends ArithmeticExpression,
+    B extends ArithmeticExpression,
+  >(a: A, b: B): FLogical;
+  public static LT(
+    a: ArithmeticExpression | FCharacter,
+    b: ArithmeticExpression | FCharacter,
+  ): FLogical {
+    return lt(a, b);
+  }
+
+  public static LE(a: FCharacter, b: FCharacter): FLogical;
+  public static LE<
+    A extends ArithmeticExpression,
+    B extends ArithmeticExpression,
+  >(a: A, b: B): FLogical;
+  public static LE(
+    a: ArithmeticExpression | FCharacter,
+    b: ArithmeticExpression | FCharacter,
+  ): FLogical {
+    return le(a, b);
+  }
+
   public static NE<
     A extends ArithmeticExpression,
     B extends ArithmeticExpression,
   >(a: A, b: B): FLogical {
     return ne(a, b);
+  }
+
+  public static GT(a: FCharacter, b: FCharacter): FLogical;
+  public static GT<
+    A extends ArithmeticExpression,
+    B extends ArithmeticExpression,
+  >(a: A, b: B): FLogical;
+  public static GT(
+    a: ArithmeticExpression | FCharacter,
+    b: ArithmeticExpression | FCharacter,
+  ): FLogical {
+    return gt(a, b);
+  }
+
+  public static GE(a: FCharacter, b: FCharacter): FLogical;
+  public static GE<
+    A extends ArithmeticExpression,
+    B extends ArithmeticExpression,
+  >(a: A, b: B): FLogical;
+  public static GE(
+    a: ArithmeticExpression | FCharacter,
+    b: ArithmeticExpression | FCharacter,
+  ): FLogical {
+    return ge(a, b);
   }
 
   public static ADD<
@@ -334,5 +387,9 @@ export default class Fortran {
 
   public static EQV(a: FLogical, b: FLogical): FLogical {
     return eqv(a, b);
+  }
+
+  public static CONCAT(a: FCharacter, b: FCharacter): FCharacter {
+    return concat(a, b);
   }
 }

@@ -1,5 +1,12 @@
 import Fortran from '../src';
-import { FByte, FComplex, FInteger, FLogical, FReal } from '../src/datatypes';
+import {
+  FByte,
+  FCharacter,
+  FComplex,
+  FInteger,
+  FLogical,
+  FReal,
+} from '../src/datatypes';
 
 describe('EQ', () => {
   test('with bytes', () => {
@@ -228,6 +235,46 @@ describe('EQ', () => {
   });
 });
 
+describe('LT', () => {
+  test('with integers', () => {
+    const a = Fortran.INTEGER(1);
+    const b = Fortran.INTEGER(2);
+    const c = Fortran.LT(a, b);
+
+    expect(c).toBeInstanceOf(FLogical);
+    expect(c.value).toStrictEqual(true);
+  });
+
+  test('with characters', () => {
+    const a = Fortran.CHARACTER('ab');
+    const b = Fortran.CHARACTER('ac');
+    const c = Fortran.LT(a, b);
+
+    expect(c).toBeInstanceOf(FLogical);
+    expect(c.value).toStrictEqual(true);
+  });
+});
+
+describe('LE', () => {
+  test('with reals', () => {
+    const a = Fortran.REAL(2.0);
+    const b = Fortran.REAL(2.0);
+    const c = Fortran.LE(a, b);
+
+    expect(c).toBeInstanceOf(FLogical);
+    expect(c.value).toStrictEqual(true);
+  });
+
+  test('with characters', () => {
+    const a = Fortran.CHARACTER('ab');
+    const b = Fortran.CHARACTER('ab');
+    const c = Fortran.LE(a, b);
+
+    expect(c).toBeInstanceOf(FLogical);
+    expect(c.value).toStrictEqual(true);
+  });
+});
+
 describe('NE', () => {
   test('with bytes', () => {
     const a = Fortran.BYTE('a');
@@ -449,6 +496,46 @@ describe('NE', () => {
     const a = Fortran.REAL(2.0);
     const b = Fortran.REAL(3.0);
     const c = Fortran.NE(a, b);
+
+    expect(c).toBeInstanceOf(FLogical);
+    expect(c.value).toStrictEqual(true);
+  });
+});
+
+describe('GT', () => {
+  test('with bytes', () => {
+    const a = Fortran.BYTE('b');
+    const b = Fortran.BYTE('a');
+    const c = Fortran.GT(a, b);
+
+    expect(c).toBeInstanceOf(FLogical);
+    expect(c.value).toStrictEqual(true);
+  });
+
+  test('with characters', () => {
+    const a = Fortran.CHARACTER('ba');
+    const b = Fortran.CHARACTER('az');
+    const c = Fortran.GT(a, b);
+
+    expect(c).toBeInstanceOf(FLogical);
+    expect(c.value).toStrictEqual(true);
+  });
+});
+
+describe('GE', () => {
+  test('with logicals', () => {
+    const a = Fortran.LOGICAL(true);
+    const b = Fortran.LOGICAL(false);
+    const c = Fortran.GE(a, b);
+
+    expect(c).toBeInstanceOf(FLogical);
+    expect(c.value).toStrictEqual(true);
+  });
+
+  test('with characters', () => {
+    const a = Fortran.CHARACTER('az');
+    const b = Fortran.CHARACTER('az');
+    const c = Fortran.GE(a, b);
 
     expect(c).toBeInstanceOf(FLogical);
     expect(c.value).toStrictEqual(true);
@@ -1356,5 +1443,16 @@ describe('EQV', () => {
 
     expect(c).toBeInstanceOf(FLogical);
     expect(c.value).toStrictEqual(false);
+  });
+});
+
+describe('CONCAT', () => {
+  test('concatenates character values', () => {
+    const a = Fortran.CHARACTER('HELLO');
+    const b = Fortran.CHARACTER(' WORLD');
+    const c = Fortran.CONCAT(a, b);
+
+    expect(c).toBeInstanceOf(FCharacter);
+    expect(c.value).toStrictEqual('HELLO WORLD');
   });
 });

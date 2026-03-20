@@ -1,6 +1,7 @@
 import {
   ArithmeticExpression,
   FByte,
+  FCharacter,
   FComplex,
   FInteger,
   FLogical,
@@ -29,6 +30,130 @@ export function eq<
   if (c instanceof FReal && d instanceof FReal) {
     return new FLogical(c.value === d.value);
   }
+}
+
+export function lt(
+  a: ArithmeticExpression | FCharacter,
+  b: ArithmeticExpression | FCharacter,
+): FLogical {
+  if (a instanceof FCharacter && b instanceof FCharacter) {
+    return new FLogical(a.value < b.value);
+  }
+
+  const { c, d } = mix(a as ArithmeticExpression, b as ArithmeticExpression);
+
+  if (c instanceof FByte && d instanceof FByte) {
+    return new FLogical(byteToNumber(c.value) < byteToNumber(d.value));
+  }
+  if (c instanceof FComplex && d instanceof FComplex) {
+    return new FLogical(
+      c.value.r < d.value.r ||
+        (c.value.r === d.value.r && c.value.i < d.value.i),
+    );
+  }
+  if (c instanceof FInteger && d instanceof FInteger) {
+    return new FLogical(c.value < d.value);
+  }
+  if (c instanceof FLogical && d instanceof FLogical) {
+    return new FLogical(Number(c.value) < Number(d.value));
+  }
+  if (c instanceof FReal && d instanceof FReal) {
+    return new FLogical(c.value < d.value);
+  }
+}
+
+export function le(
+  a: ArithmeticExpression | FCharacter,
+  b: ArithmeticExpression | FCharacter,
+): FLogical {
+  if (a instanceof FCharacter && b instanceof FCharacter) {
+    return new FLogical(a.value <= b.value);
+  }
+
+  const { c, d } = mix(a as ArithmeticExpression, b as ArithmeticExpression);
+
+  if (c instanceof FByte && d instanceof FByte) {
+    return new FLogical(byteToNumber(c.value) <= byteToNumber(d.value));
+  }
+  if (c instanceof FComplex && d instanceof FComplex) {
+    return new FLogical(
+      c.value.r < d.value.r ||
+        (c.value.r === d.value.r && c.value.i <= d.value.i),
+    );
+  }
+  if (c instanceof FInteger && d instanceof FInteger) {
+    return new FLogical(c.value <= d.value);
+  }
+  if (c instanceof FLogical && d instanceof FLogical) {
+    return new FLogical(Number(c.value) <= Number(d.value));
+  }
+  if (c instanceof FReal && d instanceof FReal) {
+    return new FLogical(c.value <= d.value);
+  }
+}
+
+export function gt(
+  a: ArithmeticExpression | FCharacter,
+  b: ArithmeticExpression | FCharacter,
+): FLogical {
+  if (a instanceof FCharacter && b instanceof FCharacter) {
+    return new FLogical(a.value > b.value);
+  }
+
+  const { c, d } = mix(a as ArithmeticExpression, b as ArithmeticExpression);
+
+  if (c instanceof FByte && d instanceof FByte) {
+    return new FLogical(byteToNumber(c.value) > byteToNumber(d.value));
+  }
+  if (c instanceof FComplex && d instanceof FComplex) {
+    return new FLogical(
+      c.value.r > d.value.r ||
+        (c.value.r === d.value.r && c.value.i > d.value.i),
+    );
+  }
+  if (c instanceof FInteger && d instanceof FInteger) {
+    return new FLogical(c.value > d.value);
+  }
+  if (c instanceof FLogical && d instanceof FLogical) {
+    return new FLogical(Number(c.value) > Number(d.value));
+  }
+  if (c instanceof FReal && d instanceof FReal) {
+    return new FLogical(c.value > d.value);
+  }
+}
+
+export function ge(
+  a: ArithmeticExpression | FCharacter,
+  b: ArithmeticExpression | FCharacter,
+): FLogical {
+  if (a instanceof FCharacter && b instanceof FCharacter) {
+    return new FLogical(a.value >= b.value);
+  }
+
+  const { c, d } = mix(a as ArithmeticExpression, b as ArithmeticExpression);
+
+  if (c instanceof FByte && d instanceof FByte) {
+    return new FLogical(byteToNumber(c.value) >= byteToNumber(d.value));
+  }
+  if (c instanceof FComplex && d instanceof FComplex) {
+    return new FLogical(
+      c.value.r > d.value.r ||
+        (c.value.r === d.value.r && c.value.i >= d.value.i),
+    );
+  }
+  if (c instanceof FInteger && d instanceof FInteger) {
+    return new FLogical(c.value >= d.value);
+  }
+  if (c instanceof FLogical && d instanceof FLogical) {
+    return new FLogical(Number(c.value) >= Number(d.value));
+  }
+  if (c instanceof FReal && d instanceof FReal) {
+    return new FLogical(c.value >= d.value);
+  }
+}
+
+export function concat(a: FCharacter, b: FCharacter): FCharacter {
+  return new FCharacter(`${a.value}${b.value}`);
 }
 
 export function ne<
