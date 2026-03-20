@@ -1164,3 +1164,87 @@ describe('POW', () => {
     expect(c.value.i).toBeCloseTo(0);
   });
 });
+
+describe('UPLUS', () => {
+  test('with byte', () => {
+    const a = Fortran.BYTE(3);
+    const c = Fortran.UPLUS(a);
+
+    expect(c).toBeInstanceOf(FByte);
+    expect(c.value).toStrictEqual(String.fromCharCode(3));
+  });
+
+  test('with integer', () => {
+    const a = Fortran.INTEGER(-7);
+    const c = Fortran.UPLUS(a);
+
+    expect(c).toBeInstanceOf(FInteger);
+    expect(c.value).toStrictEqual(-7);
+  });
+
+  test('with real', () => {
+    const a = Fortran.REAL(-3.5);
+    const c = Fortran.UPLUS(a);
+
+    expect(c).toBeInstanceOf(FReal);
+    expect(c.value).toBeCloseTo(-3.5);
+  });
+
+  test('with complex', () => {
+    const a = Fortran.COMPLEX({ r: -2, i: 3 });
+    const c = Fortran.UPLUS(a);
+
+    expect(c).toBeInstanceOf(FComplex);
+    expect(c.value).toMatchObject({ r: -2, i: 3 });
+  });
+
+  test('with logical', () => {
+    const a = Fortran.LOGICAL(true);
+    const c = Fortran.UPLUS(a);
+
+    expect(c).toBeInstanceOf(FLogical);
+    expect(c.value).toStrictEqual(true);
+  });
+});
+
+describe('UMINUS', () => {
+  test('with byte', () => {
+    const a = Fortran.BYTE(1);
+    const c = Fortran.UMINUS(a);
+
+    expect(c).toBeInstanceOf(FByte);
+    expect(c.value).toStrictEqual(String.fromCharCode(-1));
+  });
+
+  test('with integer', () => {
+    const a = Fortran.INTEGER(7);
+    const c = Fortran.UMINUS(a);
+
+    expect(c).toBeInstanceOf(FInteger);
+    expect(c.value).toStrictEqual(-7);
+  });
+
+  test('with real', () => {
+    const a = Fortran.REAL(3.5);
+    const c = Fortran.UMINUS(a);
+
+    expect(c).toBeInstanceOf(FReal);
+    expect(c.value).toBeCloseTo(-3.5);
+  });
+
+  test('with complex', () => {
+    const a = Fortran.COMPLEX({ r: 2, i: -3 });
+    const c = Fortran.UMINUS(a);
+
+    expect(c).toBeInstanceOf(FComplex);
+    expect(c.value).toMatchObject({ r: -2, i: 3 });
+  });
+
+  test('with logical', () => {
+    const a = Fortran.LOGICAL(true);
+    const c = Fortran.UMINUS(a);
+
+    expect(c).toBeInstanceOf(FLogical);
+    expect(c.value).toStrictEqual(false);
+  });
+});

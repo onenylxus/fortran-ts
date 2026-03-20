@@ -8,29 +8,6 @@ import {
 } from './datatypes';
 import { byteToNumber, getKind, mix, Mix, numberToByte } from './mixed';
 
-function divideComplex(a: Complex, b: Complex): Complex {
-  const denominator = b.r * b.r + b.i * b.i;
-  return {
-    r: (a.r * b.r + a.i * b.i) / denominator,
-    i: (a.i * b.r - a.r * b.i) / denominator,
-  };
-}
-
-function powComplex(a: Complex, b: Complex): Complex {
-  const magnitude = Math.sqrt(a.r * a.r + a.i * a.i);
-  const angle = Math.atan2(a.i, a.r);
-  const logR = Math.log(magnitude);
-
-  const x = b.r * logR - b.i * angle;
-  const y = b.i * logR + b.r * angle;
-  const expX = Math.exp(x);
-
-  return {
-    r: expX * Math.cos(y),
-    i: expX * Math.sin(y),
-  };
-}
-
 export function eq<
   A extends ArithmeticExpression,
   B extends ArithmeticExpression,
@@ -213,9 +190,16 @@ export function div<
   }
 
   if (c instanceof FComplex && d instanceof FComplex) {
-    return new FComplex(divideComplex(c.value, d.value), {
-      kind: kind as ComplexKind,
-    }) as Mix<A, B>;
+    const m = d.value.r * d.value.r + d.value.i * d.value.i;
+    return new FComplex(
+      {
+        r: (c.value.r * d.value.r + c.value.i * d.value.i) / m,
+        i: (c.value.i * d.value.r - c.value.r * d.value.i) / m,
+      },
+      {
+        kind: kind as ComplexKind,
+      },
+    ) as Mix<A, B>;
   }
 
   if (c instanceof FInteger && d instanceof FInteger) {
@@ -253,9 +237,23 @@ export function pow<
   }
 
   if (c instanceof FComplex && d instanceof FComplex) {
-    return new FComplex(powComplex(c.value, d.value), {
-      kind: kind as ComplexKind,
-    }) as Mix<A, B>;
+    const m = Math.sqrt(c.value.r * c.value.r + c.value.i * c.value.i);
+    const n = Math.atan2(c.value.i, c.value.r);
+    const l = Math.log(m);
+
+    const x = d.value.r * l - d.value.i * n;
+    const y = d.value.i * l + d.value.r * n;
+    const p = Math.exp(x);
+
+    return new FComplex(
+      {
+        r: p * Math.cos(y),
+        i: p * Math.sin(y),
+      },
+      {
+        kind: kind as ComplexKind,
+      },
+    ) as Mix<A, B>;
   }
 
   if (c instanceof FInteger && d instanceof FInteger) {
@@ -274,5 +272,65 @@ export function pow<
     return new FReal(Math.pow(c.value, d.value), {
       kind: kind as RealKind,
     }) as Mix<A, B>;
+  }
+}
+
+export function uplus<A extends ArithmeticExpression>(a: A): A {
+  const kind = getKind(a);
+
+  if (a instanceof FByte) {
+    return new FByte(byteToNumber(a.value)) as A;
+  }
+
+  if (a instanceof FComplex) {
+    return new FComplex(
+      {
+        r: +a.value.r,
+        i: +a.value.i,
+      },
+      { kind: kind as ComplexKind },
+    ) as A;
+  }
+
+  if (a instanceof FInteger) {
+    return new FInteger(+a.value, { kind: kind as IntegerKind }) as A;
+  }
+
+  if (a instanceof FLogical) {
+    return new FLogical(a.value, { kind: kind as LogicalKind }) as A;
+  }
+
+  if (a instanceof FReal) {
+    return new FReal(+a.value, { kind: kind as RealKind }) as A;
+  }
+}
+
+export function uminus<A extends ArithmeticExpression>(a: A): A {
+  const kind = getKind(a);
+
+  if (a instanceof FByte) {
+    return new FByte(-byteToNumber(a.value)) as A;
+  }
+
+  if (a instanceof FComplex) {
+    return new FComplex(
+      {
+        r: -a.value.r,
+        i: -a.value.i,
+      },
+      { kind: kind as ComplexKind },
+    ) as A;
+  }
+
+  if (a instanceof FInteger) {
+    return new FInteger(-a.value, { kind: kind as IntegerKind }) as A;
+  }
+
+  if (a instanceof FLogical) {
+    return new FLogical(!a.value, { kind: kind as LogicalKind }) as A;
+  }
+
+  if (a instanceof FReal) {
+    return new FReal(-a.value, { kind: kind as RealKind }) as A;
   }
 }
