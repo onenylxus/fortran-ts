@@ -1248,3 +1248,113 @@ describe('UMINUS', () => {
     expect(c.value).toStrictEqual(false);
   });
 });
+
+describe('NOT', () => {
+  test('inverts logical value', () => {
+    const a = Fortran.LOGICAL(true);
+    const c = Fortran.NOT(a);
+
+    expect(c).toBeInstanceOf(FLogical);
+    expect(c.value).toStrictEqual(false);
+  });
+});
+
+describe('AND', () => {
+  test('true and true', () => {
+    const a = Fortran.LOGICAL(true);
+    const b = Fortran.LOGICAL(true);
+    const c = Fortran.AND(a, b);
+
+    expect(c).toBeInstanceOf(FLogical);
+    expect(c.value).toStrictEqual(true);
+  });
+
+  test('true and false', () => {
+    const a = Fortran.LOGICAL(true);
+    const b = Fortran.LOGICAL(false);
+    const c = Fortran.AND(a, b);
+
+    expect(c).toBeInstanceOf(FLogical);
+    expect(c.value).toStrictEqual(false);
+  });
+});
+
+describe('OR', () => {
+  test('false or false', () => {
+    const a = Fortran.LOGICAL(false);
+    const b = Fortran.LOGICAL(false);
+    const c = Fortran.OR(a, b);
+
+    expect(c).toBeInstanceOf(FLogical);
+    expect(c.value).toStrictEqual(false);
+  });
+
+  test('true or false', () => {
+    const a = Fortran.LOGICAL(true);
+    const b = Fortran.LOGICAL(false);
+    const c = Fortran.OR(a, b);
+
+    expect(c).toBeInstanceOf(FLogical);
+    expect(c.value).toStrictEqual(true);
+  });
+});
+
+describe('NEQV', () => {
+  test('true neqv false', () => {
+    const a = Fortran.LOGICAL(true);
+    const b = Fortran.LOGICAL(false);
+    const c = Fortran.NEQV(a, b);
+
+    expect(c).toBeInstanceOf(FLogical);
+    expect(c.value).toStrictEqual(true);
+  });
+
+  test('true neqv true', () => {
+    const a = Fortran.LOGICAL(true);
+    const b = Fortran.LOGICAL(true);
+    const c = Fortran.NEQV(a, b);
+
+    expect(c).toBeInstanceOf(FLogical);
+    expect(c.value).toStrictEqual(false);
+  });
+});
+
+describe('XOR', () => {
+  test('false xor false', () => {
+    const a = Fortran.LOGICAL(false);
+    const b = Fortran.LOGICAL(false);
+    const c = Fortran.XOR(a, b);
+
+    expect(c).toBeInstanceOf(FLogical);
+    expect(c.value).toStrictEqual(false);
+  });
+
+  test('true xor false', () => {
+    const a = Fortran.LOGICAL(true);
+    const b = Fortran.LOGICAL(false);
+    const c = Fortran.XOR(a, b);
+
+    expect(c).toBeInstanceOf(FLogical);
+    expect(c.value).toStrictEqual(true);
+  });
+});
+
+describe('EQV', () => {
+  test('true eqv true', () => {
+    const a = Fortran.LOGICAL(true);
+    const b = Fortran.LOGICAL(true);
+    const c = Fortran.EQV(a, b);
+
+    expect(c).toBeInstanceOf(FLogical);
+    expect(c.value).toStrictEqual(true);
+  });
+
+  test('true eqv false', () => {
+    const a = Fortran.LOGICAL(true);
+    const b = Fortran.LOGICAL(false);
+    const c = Fortran.EQV(a, b);
+
+    expect(c).toBeInstanceOf(FLogical);
+    expect(c.value).toStrictEqual(false);
+  });
+});

@@ -334,3 +334,67 @@ export function uminus<A extends ArithmeticExpression>(a: A): A {
     return new FReal(-a.value, { kind: kind as RealKind }) as A;
   }
 }
+
+export function not(a: FLogical): FLogical {
+  return new FLogical(!a.value, { kind: a.kind });
+}
+
+export function and<A extends FLogical, B extends FLogical>(
+  a: A,
+  b: B,
+): FLogical {
+  const { c, d } = mix(a, b);
+  const kind = getKind(c);
+
+  if (c instanceof FLogical && d instanceof FLogical) {
+    return new FLogical(c.value && d.value, { kind: kind as LogicalKind });
+  }
+}
+
+export function or<A extends FLogical, B extends FLogical>(
+  a: A,
+  b: B,
+): FLogical {
+  const { c, d } = mix(a, b);
+  const kind = getKind(c);
+
+  if (c instanceof FLogical && d instanceof FLogical) {
+    return new FLogical(c.value || d.value, { kind: kind as LogicalKind });
+  }
+}
+
+export function neqv<A extends FLogical, B extends FLogical>(
+  a: A,
+  b: B,
+): FLogical {
+  const { c, d } = mix(a, b);
+  const kind = getKind(c);
+
+  if (c instanceof FLogical && d instanceof FLogical) {
+    return new FLogical(c.value !== d.value, { kind: kind as LogicalKind });
+  }
+}
+
+export function xor<A extends FLogical, B extends FLogical>(
+  a: A,
+  b: B,
+): FLogical {
+  const { c, d } = mix(a, b);
+  const kind = getKind(c);
+
+  if (c instanceof FLogical && d instanceof FLogical) {
+    return new FLogical(c.value !== d.value, { kind: kind as LogicalKind });
+  }
+}
+
+export function eqv<A extends FLogical, B extends FLogical>(
+  a: A,
+  b: B,
+): FLogical {
+  const { c, d } = mix(a, b);
+  const kind = getKind(c);
+
+  if (c instanceof FLogical && d instanceof FLogical) {
+    return new FLogical(c.value === d.value, { kind: kind as LogicalKind });
+  }
+}

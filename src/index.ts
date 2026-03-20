@@ -16,7 +16,23 @@ import {
 } from './datatypes';
 import { cmplx, dble, dcmplx, int, qcmplx, qreal, real } from './expressions';
 import { Mix } from './mixed';
-import { add, div, eq, mul, ne, pow, sub, uminus, uplus } from './operators';
+import {
+  add,
+  and,
+  div,
+  eq,
+  eqv,
+  mul,
+  ne,
+  neqv,
+  not,
+  or,
+  pow,
+  sub,
+  uminus,
+  uplus,
+  xor,
+} from './operators';
 import { getDim, isComplex } from './utils';
 
 export default class Fortran {
@@ -294,5 +310,29 @@ export default class Fortran {
 
   public static UMINUS<A extends ArithmeticExpression>(a: A): A {
     return uminus(a);
+  }
+
+  public static NOT(a: FLogical): FLogical {
+    return not(a);
+  }
+
+  public static AND(a: FLogical, b: FLogical): FLogical {
+    return and(a, b);
+  }
+
+  public static OR(a: FLogical, b: FLogical): FLogical {
+    return or(a, b);
+  }
+
+  public static NEQV(a: FLogical, b: FLogical): FLogical {
+    return neqv(a, b);
+  }
+
+  public static XOR(a: FLogical, b: FLogical): FLogical {
+    return xor(a, b);
+  }
+
+  public static EQV(a: FLogical, b: FLogical): FLogical {
+    return eqv(a, b);
   }
 }
