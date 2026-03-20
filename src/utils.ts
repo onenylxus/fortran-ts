@@ -8,13 +8,19 @@ export function isRangedInteger(
   bits: number,
   signed: boolean,
 ): value is number {
-  if (!Number.isInteger(value)) {
+  if (!Number.isSafeInteger(value)) {
     return false;
   }
   const num = value as number;
-  const min = signed ? -Math.abs(1 << (bits - 1)) : 0;
-  const max = signed ? Math.abs(1 << (bits - 1)) : Math.abs(1 << bits);
-  return num >= min && num < max;
+
+  const unsignedMax = Math.min(2 ** bits - 1, Number.MAX_SAFE_INTEGER);
+  const signedMin = Math.max(-(2 ** (bits - 1)), Number.MIN_SAFE_INTEGER);
+  const signedMax = Math.min(2 ** (bits - 1) - 1, Number.MAX_SAFE_INTEGER);
+
+  if (signed) {
+    return num >= signedMin && num <= signedMax;
+  }
+  return num >= 0 && num <= unsignedMax;
 }
 
 export function isAscii(value: unknown): value is string {
