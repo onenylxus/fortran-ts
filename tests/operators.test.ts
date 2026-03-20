@@ -908,3 +908,259 @@ describe('SUB', () => {
     expect(c.value).toBeCloseTo(1.0);
   });
 });
+
+describe('MUL', () => {
+  test('with bytes', () => {
+    const a = Fortran.BYTE(5);
+    const b = Fortran.BYTE(4);
+    const c = Fortran.MUL(a, b);
+
+    expect(c).toBeInstanceOf(FByte);
+    expect(c.value).toStrictEqual(String.fromCharCode(20));
+  });
+
+  test('with byte and integer', () => {
+    const a = Fortran.BYTE(5);
+    const b = Fortran.INTEGER(4);
+    const c = Fortran.MUL(a, b);
+
+    expect(c).toBeInstanceOf(FInteger);
+    expect(c.value).toStrictEqual(20);
+  });
+
+  test('with byte and real', () => {
+    const a = Fortran.BYTE(5);
+    const b = Fortran.REAL(2.5);
+    const c = Fortran.MUL(a, b);
+
+    expect(c).toBeInstanceOf(FReal);
+    expect(c.value).toBeCloseTo(12.5);
+  });
+
+  test('with integers', () => {
+    const a = Fortran.INTEGER(6);
+    const b = Fortran.INTEGER(7);
+    const c = Fortran.MUL(a, b);
+
+    expect(c).toBeInstanceOf(FInteger);
+    expect(c.value).toStrictEqual(42);
+  });
+
+  test('with reals', () => {
+    const a = Fortran.REAL(1.5);
+    const b = Fortran.REAL(4.0);
+    const c = Fortran.MUL(a, b);
+
+    expect(c).toBeInstanceOf(FReal);
+    expect(c.value).toBeCloseTo(6);
+  });
+
+  test('with logicals', () => {
+    const a = Fortran.LOGICAL(true);
+    const b = Fortran.LOGICAL(false);
+    const c = Fortran.MUL(a, b);
+
+    expect(c).toBeInstanceOf(FLogical);
+    expect(c.value).toStrictEqual(false);
+  });
+
+  test('with complex and integer', () => {
+    const a = Fortran.COMPLEX({ r: 2, i: 3 });
+    const b = Fortran.INTEGER(2);
+    const c = Fortran.MUL(a, b);
+
+    expect(c).toBeInstanceOf(FComplex);
+    expect(c.value).toMatchObject({ r: 4, i: 6 });
+  });
+
+  test('with real and complex', () => {
+    const a = Fortran.REAL(1.5);
+    const b = Fortran.COMPLEX({ r: 2, i: 3 });
+    const c = Fortran.MUL(a, b);
+
+    expect(c).toBeInstanceOf(FComplex);
+    expect(c.value).toMatchObject({ r: 3, i: 4.5 });
+  });
+
+  test('with complexes', () => {
+    const a = Fortran.COMPLEX({ r: 2, i: 3 });
+    const b = Fortran.COMPLEX({ r: 4, i: -1 });
+    const c = Fortran.MUL(a, b);
+
+    expect(c).toBeInstanceOf(FComplex);
+    expect(c.value.r).toBeCloseTo(11);
+    expect(c.value.i).toBeCloseTo(10);
+  });
+});
+
+describe('DIV', () => {
+  test('with bytes', () => {
+    const a = Fortran.BYTE(8);
+    const b = Fortran.BYTE(2);
+    const c = Fortran.DIV(a, b);
+
+    expect(c).toBeInstanceOf(FByte);
+    expect(c.value).toStrictEqual(String.fromCharCode(4));
+  });
+
+  test('with byte and integer', () => {
+    const a = Fortran.BYTE(8);
+    const b = Fortran.INTEGER(2);
+    const c = Fortran.DIV(a, b);
+
+    expect(c).toBeInstanceOf(FInteger);
+    expect(c.value).toStrictEqual(4);
+  });
+
+  test('with integer and integer truncates', () => {
+    const a = Fortran.INTEGER(7);
+    const b = Fortran.INTEGER(2);
+    const c = Fortran.DIV(a, b);
+
+    expect(c).toBeInstanceOf(FInteger);
+    expect(c.value).toStrictEqual(3);
+  });
+
+  test('with integer and real', () => {
+    const a = Fortran.INTEGER(7);
+    const b = Fortran.REAL(2.0);
+    const c = Fortran.DIV(a, b);
+
+    expect(c).toBeInstanceOf(FReal);
+    expect(c.value).toBeCloseTo(3.5);
+  });
+
+  test('with reals', () => {
+    const a = Fortran.REAL(7.5);
+    const b = Fortran.REAL(2.5);
+    const c = Fortran.DIV(a, b);
+
+    expect(c).toBeInstanceOf(FReal);
+    expect(c.value).toBeCloseTo(3);
+  });
+
+  test('with logicals', () => {
+    const a = Fortran.LOGICAL(true);
+    const b = Fortran.LOGICAL(true);
+    const c = Fortran.DIV(a, b);
+
+    expect(c).toBeInstanceOf(FLogical);
+    expect(c.value).toStrictEqual(true);
+  });
+
+  test('with complex and integer', () => {
+    const a = Fortran.COMPLEX({ r: 2, i: 4 });
+    const b = Fortran.INTEGER(2);
+    const c = Fortran.DIV(a, b);
+
+    expect(c).toBeInstanceOf(FComplex);
+    expect(c.value.r).toBeCloseTo(1);
+    expect(c.value.i).toBeCloseTo(2);
+  });
+
+  test('with real and complex', () => {
+    const a = Fortran.REAL(2);
+    const b = Fortran.COMPLEX({ r: 1, i: -1 });
+    const c = Fortran.DIV(a, b);
+
+    expect(c).toBeInstanceOf(FComplex);
+    expect(c.value.r).toBeCloseTo(1);
+    expect(c.value.i).toBeCloseTo(1);
+  });
+
+  test('with complexes', () => {
+    const a = Fortran.COMPLEX({ r: 3, i: 2 });
+    const b = Fortran.COMPLEX({ r: 4, i: -1 });
+    const c = Fortran.DIV(a, b);
+
+    expect(c).toBeInstanceOf(FComplex);
+    expect(c.value.r).toBeCloseTo(10 / 17);
+    expect(c.value.i).toBeCloseTo(11 / 17);
+  });
+});
+
+describe('POW', () => {
+  test('with bytes', () => {
+    const a = Fortran.BYTE(2);
+    const b = Fortran.BYTE(3);
+    const c = Fortran.POW(a, b);
+
+    expect(c).toBeInstanceOf(FByte);
+    expect(c.value).toStrictEqual(String.fromCharCode(8));
+  });
+
+  test('with byte and integer', () => {
+    const a = Fortran.BYTE(3);
+    const b = Fortran.INTEGER(2);
+    const c = Fortran.POW(a, b);
+
+    expect(c).toBeInstanceOf(FInteger);
+    expect(c.value).toStrictEqual(9);
+  });
+
+  test('with integers', () => {
+    const a = Fortran.INTEGER(2);
+    const b = Fortran.INTEGER(10);
+    const c = Fortran.POW(a, b);
+
+    expect(c).toBeInstanceOf(FInteger);
+    expect(c.value).toStrictEqual(1024);
+  });
+
+  test('with real and integer', () => {
+    const a = Fortran.REAL(9);
+    const b = Fortran.INTEGER(2);
+    const c = Fortran.POW(a, b);
+
+    expect(c).toBeInstanceOf(FReal);
+    expect(c.value).toBeCloseTo(81);
+  });
+
+  test('with reals', () => {
+    const a = Fortran.REAL(2.5);
+    const b = Fortran.REAL(2);
+    const c = Fortran.POW(a, b);
+
+    expect(c).toBeInstanceOf(FReal);
+    expect(c.value).toBeCloseTo(6.25);
+  });
+
+  test('with logicals', () => {
+    const a = Fortran.LOGICAL(true);
+    const b = Fortran.LOGICAL(false);
+    const c = Fortran.POW(a, b);
+
+    expect(c).toBeInstanceOf(FLogical);
+    expect(c.value).toStrictEqual(true);
+  });
+
+  test('with complex and integer', () => {
+    const a = Fortran.COMPLEX({ r: 1, i: 1 });
+    const b = Fortran.INTEGER(2);
+    const c = Fortran.POW(a, b);
+
+    expect(c).toBeInstanceOf(FComplex);
+    expect(c.value.r).toBeCloseTo(0);
+    expect(c.value.i).toBeCloseTo(2);
+  });
+
+  test('with real and complex', () => {
+    const a = Fortran.REAL(2);
+    const b = Fortran.COMPLEX({ r: 2, i: 0 });
+    const c = Fortran.POW(a, b);
+
+    expect(c).toBeInstanceOf(FComplex);
+    expect(c.value.r).toBeCloseTo(4);
+    expect(c.value.i).toBeCloseTo(0);
+  });
+
+  test('with complexes', () => {
+    const a = Fortran.COMPLEX({ r: 2, i: 0 });
+    const b = Fortran.COMPLEX({ r: 3, i: 0 });
+    const c = Fortran.POW(a, b);
+
+    expect(c).toBeInstanceOf(FComplex);
+    expect(c.value.r).toBeCloseTo(8);
+    expect(c.value.i).toBeCloseTo(0);
+  });
+});

@@ -16,7 +16,7 @@ import {
 } from './datatypes';
 import { cmplx, dble, dcmplx, int, qcmplx, qreal, real } from './expressions';
 import { Mix } from './mixed';
-import { eq, ne, add, sub } from './operators';
+import { add, div, eq, mul, ne, pow, sub } from './operators';
 import { getDim, isComplex } from './utils';
 
 export default class Fortran {
@@ -242,16 +242,16 @@ export default class Fortran {
   public static EQ<
     A extends ArithmeticExpression,
     B extends ArithmeticExpression,
-    >(a: A, b: B): FLogical {
-      return eq(a, b);
-    }
+  >(a: A, b: B): FLogical {
+    return eq(a, b);
+  }
 
   public static NE<
     A extends ArithmeticExpression,
     B extends ArithmeticExpression,
-    >(a: A, b: B): FLogical {
-      return ne(a, b);
-    }
+  >(a: A, b: B): FLogical {
+    return ne(a, b);
+  }
 
   public static ADD<
     A extends ArithmeticExpression,
@@ -265,5 +265,26 @@ export default class Fortran {
     B extends ArithmeticExpression,
   >(a: A, b: B): Mix<A, B> {
     return sub(a, b);
+  }
+
+  public static MUL<
+    A extends ArithmeticExpression,
+    B extends ArithmeticExpression,
+  >(a: A, b: B): Mix<A, B> {
+    return mul(a, b);
+  }
+
+  public static DIV<
+    A extends ArithmeticExpression,
+    B extends ArithmeticExpression,
+  >(a: A, b: B): Mix<A, B> {
+    return div(a, b);
+  }
+
+  public static POW<
+    A extends ArithmeticExpression,
+    B extends ArithmeticExpression,
+  >(a: A, b: B): Mix<A, B> {
+    return pow(a, b);
   }
 }
