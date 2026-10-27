@@ -233,6 +233,14 @@ describe('EQ', () => {
     expect(c).toBeInstanceOf(FLogical);
     expect(c.value).toStrictEqual(true);
   });
+
+  test('compares characters after blank-padding the shorter value', () => {
+    const a = Fortran.CHARACTER('text');
+    const b = Fortran.CHARACTER('text  ');
+    const c = Fortran.EQ(a, b);
+
+    expect(c.value).toStrictEqual(true);
+  });
 });
 
 describe('LT', () => {
@@ -251,6 +259,14 @@ describe('LT', () => {
     const c = Fortran.LT(a, b);
 
     expect(c).toBeInstanceOf(FLogical);
+    expect(c.value).toStrictEqual(true);
+  });
+
+  test('orders values using blank-padding for unequal lengths', () => {
+    const a = Fortran.CHARACTER('a');
+    const b = Fortran.CHARACTER('aa');
+    const c = Fortran.LT(a, b);
+
     expect(c.value).toStrictEqual(true);
   });
 });
@@ -499,6 +515,14 @@ describe('NE', () => {
 
     expect(c).toBeInstanceOf(FLogical);
     expect(c.value).toStrictEqual(true);
+  });
+
+  test('treats trailing blanks as insignificant in character comparisons', () => {
+    const a = Fortran.CHARACTER('text');
+    const b = Fortran.CHARACTER('text ');
+    const c = Fortran.NE(a, b);
+
+    expect(c.value).toStrictEqual(false);
   });
 });
 

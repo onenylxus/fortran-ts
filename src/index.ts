@@ -260,11 +260,19 @@ export default class Fortran {
     return real(value);
   }
 
+  public static EQ(a: FCharacter, b: FCharacter): FLogical;
   public static EQ<
     A extends ArithmeticExpression,
     B extends ArithmeticExpression,
-  >(a: A, b: B): FLogical {
-    return eq(a, b);
+  >(a: A, b: B): FLogical;
+  public static EQ(
+    a: ArithmeticExpression | FCharacter,
+    b: ArithmeticExpression | FCharacter,
+  ): FLogical {
+    if (a instanceof FCharacter && b instanceof FCharacter) {
+      return eq(a, b);
+    }
+    return eq(a as ArithmeticExpression, b as ArithmeticExpression);
   }
 
   public static LT(a: FCharacter, b: FCharacter): FLogical;
@@ -291,11 +299,19 @@ export default class Fortran {
     return le(a, b);
   }
 
+  public static NE(a: FCharacter, b: FCharacter): FLogical;
   public static NE<
     A extends ArithmeticExpression,
     B extends ArithmeticExpression,
-  >(a: A, b: B): FLogical {
-    return ne(a, b);
+  >(a: A, b: B): FLogical;
+  public static NE(
+    a: ArithmeticExpression | FCharacter,
+    b: ArithmeticExpression | FCharacter,
+  ): FLogical {
+    if (a instanceof FCharacter && b instanceof FCharacter) {
+      return ne(a, b);
+    }
+    return ne(a as ArithmeticExpression, b as ArithmeticExpression);
   }
 
   public static GT(a: FCharacter, b: FCharacter): FLogical;

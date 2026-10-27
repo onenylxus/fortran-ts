@@ -248,7 +248,10 @@ export class FCharacter extends FIntrinsic<string> {
 
   public set value(v: string) {
     assert(v.split('').every((c) => isAscii(c)));
-    this._value = v.substring(0, this.len);
+    this._value =
+      this.len === undefined
+        ? v
+        : v.substring(0, this.len).padEnd(this.len, ' ');
   }
 
   public get value(): string {

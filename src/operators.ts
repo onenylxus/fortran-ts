@@ -10,11 +10,37 @@ import {
 } from './datatypes';
 import { byteToNumber, getKind, mix, Mix, numberToByte } from './mixed';
 
+function compareCharacters(a: FCharacter, b: FCharacter): number {
+  const length = Math.max(a.value.length, b.value.length);
+  const left = a.value.padEnd(length, ' ');
+  const right = b.value.padEnd(length, ' ');
+
+  if (left < right) {
+    return -1;
+  }
+  if (left > right) {
+    return 1;
+  }
+  return 0;
+}
+
+export function eq(a: FCharacter, b: FCharacter): FLogical;
 export function eq<
   A extends ArithmeticExpression,
   B extends ArithmeticExpression,
->(a: A, b: B): FLogical {
-  const { c, d } = mix(a, b);
+>(a: A, b: B): FLogical;
+export function eq(
+  a: ArithmeticExpression | FCharacter,
+  b: ArithmeticExpression | FCharacter,
+): FLogical {
+  if (a instanceof FCharacter && b instanceof FCharacter) {
+    return new FLogical(compareCharacters(a, b) === 0);
+  }
+
+  const { c, d } = mix(
+    a as ArithmeticExpression,
+    b as ArithmeticExpression,
+  );
 
   if (c instanceof FByte && d instanceof FByte) {
     return new FLogical(byteToNumber(c.value) === byteToNumber(d.value));
@@ -39,7 +65,7 @@ export function lt(
   b: ArithmeticExpression | FCharacter,
 ): FLogical {
   if (a instanceof FCharacter && b instanceof FCharacter) {
-    return new FLogical(a.value < b.value);
+    return new FLogical(compareCharacters(a, b) < 0);
   }
 
   const { c, d } = mix(a as ArithmeticExpression, b as ArithmeticExpression);
@@ -70,7 +96,7 @@ export function le(
   b: ArithmeticExpression | FCharacter,
 ): FLogical {
   if (a instanceof FCharacter && b instanceof FCharacter) {
-    return new FLogical(a.value <= b.value);
+    return new FLogical(compareCharacters(a, b) <= 0);
   }
 
   const { c, d } = mix(a as ArithmeticExpression, b as ArithmeticExpression);
@@ -101,7 +127,7 @@ export function gt(
   b: ArithmeticExpression | FCharacter,
 ): FLogical {
   if (a instanceof FCharacter && b instanceof FCharacter) {
-    return new FLogical(a.value > b.value);
+    return new FLogical(compareCharacters(a, b) > 0);
   }
 
   const { c, d } = mix(a as ArithmeticExpression, b as ArithmeticExpression);
@@ -132,7 +158,7 @@ export function ge(
   b: ArithmeticExpression | FCharacter,
 ): FLogical {
   if (a instanceof FCharacter && b instanceof FCharacter) {
-    return new FLogical(a.value >= b.value);
+    return new FLogical(compareCharacters(a, b) >= 0);
   }
 
   const { c, d } = mix(a as ArithmeticExpression, b as ArithmeticExpression);
@@ -162,11 +188,23 @@ export function concat(a: FCharacter, b: FCharacter): FCharacter {
   return new FCharacter(`${a.value}${b.value}`);
 }
 
+export function ne(a: FCharacter, b: FCharacter): FLogical;
 export function ne<
   A extends ArithmeticExpression,
   B extends ArithmeticExpression,
->(a: A, b: B): FLogical {
-  const { c, d } = mix(a, b);
+>(a: A, b: B): FLogical;
+export function ne(
+  a: ArithmeticExpression | FCharacter,
+  b: ArithmeticExpression | FCharacter,
+): FLogical {
+  if (a instanceof FCharacter && b instanceof FCharacter) {
+    return new FLogical(compareCharacters(a, b) !== 0);
+  }
+
+  const { c, d } = mix(
+    a as ArithmeticExpression,
+    b as ArithmeticExpression,
+  );
 
   if (c instanceof FByte && d instanceof FByte) {
     return new FLogical(byteToNumber(c.value) !== byteToNumber(d.value));

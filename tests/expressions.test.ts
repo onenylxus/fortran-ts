@@ -119,12 +119,29 @@ describe('CHARACTER', () => {
     expect(char.len).toStrictEqual(5);
   });
 
+  test('pads short string values to the declared length', () => {
+    const char = Fortran.CHARACTER('hi', 5);
+
+    expect(char.value).toStrictEqual('hi   ');
+    expect(char.value.length).toStrictEqual(5);
+  });
+
   test('truncated from string value with length', () => {
     const char = Fortran.CHARACTER('hello world', 5);
 
     expect(char).toBeInstanceOf(FCharacter);
     expect(char.value).toStrictEqual('hello');
     expect(char.len).toStrictEqual(5);
+  });
+
+  test('pads and truncates reassigned values to the declared length', () => {
+    const char = Fortran.CHARACTER('hello', 5);
+
+    char.value = 'hi';
+    expect(char.value).toStrictEqual('hi   ');
+
+    char.value = 'goodbye';
+    expect(char.value).toStrictEqual('goodb');
   });
 
   test('from array of string values', () => {
@@ -139,13 +156,13 @@ describe('CHARACTER', () => {
   });
 
   test('inherits options from array of string values with length', () => {
-    const charArray = Fortran.CHARACTER(['hello', 'worldwide'], 5);
+    const charArray = Fortran.CHARACTER(['hi', 'worldwide'], 5);
 
     expect(charArray).toBeInstanceOf(FCharacterArray);
     assert(charArray instanceof FCharacterArray);
     expect(charArray.dim).toStrictEqual([2]);
 
-    expect(charArray.value[1]).toStrictEqual('hello');
+    expect(charArray.value[1]).toStrictEqual('hi   ');
     expect(charArray.value[2]).toStrictEqual('world');
   });
 
