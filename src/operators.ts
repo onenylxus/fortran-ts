@@ -1,3 +1,4 @@
+import assert from 'assert';
 import {
   ArithmeticExpression,
   FByte,
@@ -30,6 +31,7 @@ export function eq<
   if (c instanceof FReal && d instanceof FReal) {
     return new FLogical(c.value === d.value);
   }
+  assert.fail('Unsupported arithmetic operands');
 }
 
 export function lt(
@@ -60,6 +62,7 @@ export function lt(
   if (c instanceof FReal && d instanceof FReal) {
     return new FLogical(c.value < d.value);
   }
+  assert.fail('Unsupported arithmetic operands');
 }
 
 export function le(
@@ -90,6 +93,7 @@ export function le(
   if (c instanceof FReal && d instanceof FReal) {
     return new FLogical(c.value <= d.value);
   }
+  assert.fail('Unsupported arithmetic operands');
 }
 
 export function gt(
@@ -120,6 +124,7 @@ export function gt(
   if (c instanceof FReal && d instanceof FReal) {
     return new FLogical(c.value > d.value);
   }
+  assert.fail('Unsupported arithmetic operands');
 }
 
 export function ge(
@@ -150,6 +155,7 @@ export function ge(
   if (c instanceof FReal && d instanceof FReal) {
     return new FLogical(c.value >= d.value);
   }
+  assert.fail('Unsupported arithmetic operands');
 }
 
 export function concat(a: FCharacter, b: FCharacter): FCharacter {
@@ -177,6 +183,7 @@ export function ne<
   if (c instanceof FReal && d instanceof FReal) {
     return new FLogical(c.value !== d.value);
   }
+  assert.fail('Unsupported arithmetic operands');
 }
 
 export function add<
@@ -215,6 +222,7 @@ export function add<
       kind: kind as RealKind,
     }) as Mix<A, B>;
   }
+  assert.fail('Unsupported arithmetic operands');
 }
 
 export function sub<
@@ -257,6 +265,7 @@ export function sub<
       kind: kind as RealKind,
     }) as Mix<A, B>;
   }
+  assert.fail('Unsupported arithmetic operands');
 }
 
 export function mul<
@@ -299,6 +308,7 @@ export function mul<
       kind: kind as RealKind,
     }) as Mix<A, B>;
   }
+  assert.fail('Unsupported arithmetic operands');
 }
 
 export function div<
@@ -344,6 +354,7 @@ export function div<
       kind: kind as RealKind,
     }) as Mix<A, B>;
   }
+  assert.fail('Unsupported arithmetic operands');
 }
 
 export function pow<
@@ -398,6 +409,7 @@ export function pow<
       kind: kind as RealKind,
     }) as Mix<A, B>;
   }
+  assert.fail('Unsupported arithmetic operands');
 }
 
 export function uplus<A extends ArithmeticExpression>(a: A): A {
@@ -428,6 +440,7 @@ export function uplus<A extends ArithmeticExpression>(a: A): A {
   if (a instanceof FReal) {
     return new FReal(+a.value, { kind: kind as RealKind }) as A;
   }
+  assert.fail('Unsupported arithmetic expression');
 }
 
 export function uminus<A extends ArithmeticExpression>(a: A): A {
@@ -458,6 +471,7 @@ export function uminus<A extends ArithmeticExpression>(a: A): A {
   if (a instanceof FReal) {
     return new FReal(-a.value, { kind: kind as RealKind }) as A;
   }
+  assert.fail('Unsupported arithmetic expression');
 }
 
 export function not(a: FLogical): FLogical {
@@ -474,6 +488,7 @@ export function and<A extends FLogical, B extends FLogical>(
   if (c instanceof FLogical && d instanceof FLogical) {
     return new FLogical(c.value && d.value, { kind: kind as LogicalKind });
   }
+  assert.fail('Unsupported logical operands');
 }
 
 export function or<A extends FLogical, B extends FLogical>(
@@ -486,6 +501,7 @@ export function or<A extends FLogical, B extends FLogical>(
   if (c instanceof FLogical && d instanceof FLogical) {
     return new FLogical(c.value || d.value, { kind: kind as LogicalKind });
   }
+  assert.fail('Unsupported logical operands');
 }
 
 export function neqv<A extends FLogical, B extends FLogical>(
@@ -498,6 +514,7 @@ export function neqv<A extends FLogical, B extends FLogical>(
   if (c instanceof FLogical && d instanceof FLogical) {
     return new FLogical(c.value !== d.value, { kind: kind as LogicalKind });
   }
+  assert.fail('Unsupported logical operands');
 }
 
 export function xor<A extends FLogical, B extends FLogical>(
@@ -510,6 +527,7 @@ export function xor<A extends FLogical, B extends FLogical>(
   if (c instanceof FLogical && d instanceof FLogical) {
     return new FLogical(c.value !== d.value, { kind: kind as LogicalKind });
   }
+  assert.fail('Unsupported logical operands');
 }
 
 export function eqv<A extends FLogical, B extends FLogical>(
@@ -522,4 +540,5 @@ export function eqv<A extends FLogical, B extends FLogical>(
   if (c instanceof FLogical && d instanceof FLogical) {
     return new FLogical(c.value === d.value, { kind: kind as LogicalKind });
   }
+  assert.fail('Unsupported logical operands');
 }

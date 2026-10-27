@@ -1,3 +1,4 @@
+import assert from 'assert';
 import {
   ArithmeticExpression,
   FByte,
@@ -44,7 +45,7 @@ export function int(e: ArithmeticExpression | number): FInteger {
       kind: 4,
     });
   }
-  return new FInteger(e);
+  assert.fail('Unsupported arithmetic expression');
 }
 
 export function real(e: ArithmeticExpression): FReal {
@@ -83,6 +84,7 @@ export function real(e: ArithmeticExpression): FReal {
       kind: 4,
     });
   }
+  assert.fail('Unsupported arithmetic expression');
 }
 
 export function dble(e: ArithmeticExpression): FReal {
@@ -121,6 +123,7 @@ export function dble(e: ArithmeticExpression): FReal {
       kind: 8,
     });
   }
+  assert.fail('Unsupported arithmetic expression');
 }
 
 export function qreal(e: ArithmeticExpression): FReal {
@@ -159,6 +162,7 @@ export function qreal(e: ArithmeticExpression): FReal {
       kind: 16,
     });
   }
+  assert.fail('Unsupported arithmetic expression');
 }
 
 export function cmplx(e: ArithmeticExpression): FComplex {
@@ -212,6 +216,7 @@ export function cmplx(e: ArithmeticExpression): FComplex {
       },
     );
   }
+  assert.fail('Unsupported arithmetic expression');
 }
 
 export function dcmplx(e: ArithmeticExpression): FComplex {
@@ -262,6 +267,7 @@ export function dcmplx(e: ArithmeticExpression): FComplex {
       },
     );
   }
+  assert.fail('Unsupported arithmetic expression');
 }
 
 export function qcmplx(e: ArithmeticExpression): FComplex {
@@ -312,4 +318,5 @@ export function qcmplx(e: ArithmeticExpression): FComplex {
       },
     );
   }
+  assert.fail('Unsupported arithmetic expression');
 }

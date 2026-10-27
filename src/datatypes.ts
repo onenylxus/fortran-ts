@@ -34,7 +34,7 @@ export type ArithmeticExpression =
   | FReal;
 
 abstract class FIntrinsic<T> implements FDataOptions {
-  protected _value: T;
+  declare protected _value: T;
 
   public constructor(
     protected _standard: FortranStandard,
@@ -62,9 +62,13 @@ type FArrayOptions = {
   dim: Dimension;
 } & FDataOptions;
 
-abstract class FArray<P, T = FIntrinsic<P>> implements FDataOptions {
-  protected _value: FortranArray<T>;
-  private _dim: Dimension;
+type FortranArrayValue<T> = (T | undefined | FortranArrayValue<T>)[];
+
+abstract class FArray<P, T extends { value: P } = FIntrinsic<P>>
+  implements FDataOptions
+{
+  declare protected _value: FortranArray<T>;
+  declare private _dim: Dimension;
 
   public constructor(
     protected _standard: FortranStandard,
@@ -91,17 +95,19 @@ abstract class FArray<P, T = FIntrinsic<P>> implements FDataOptions {
     assert(a.length === this.dim[d]);
 
     if (d === 0) {
-      return a.map((v) => this.build(v));
+      return (a as P[]).map((v) => this.build(v));
     }
-    return a.map((v) => this.fromValue(v, d - 1)) as FortranArray<T>;
+    return (a as FortranArray<P>).map((v) =>
+      this.fromValue(v as FortranArray<P>, d - 1),
+    ) as FortranArray<T>;
   }
 
-  protected toValue(a: FortranArray<T>): FortranArray<P> {
+  protected toValue(a: FortranArray<T>): FortranArrayValue<P> {
     return [
       undefined,
       ...a.map((v) => {
         if (Array.isArray(v)) {
-          return this.toValue(v);
+          return this.toValue(v as FortranArray<T>);
         }
         return v.value;
       }),
@@ -112,7 +118,7 @@ abstract class FArray<P, T = FIntrinsic<P>> implements FDataOptions {
     this._value = this.fromValue(v, this.dim.length - 1);
   }
 
-  public get value(): FortranArray<P> {
+  public get value(): FortranArrayValue<P> {
     return this.toValue(this._value);
   }
 
