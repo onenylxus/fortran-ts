@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { FComplex, FInteger, FReal } from './datatypes';
+import { FCharacter, FComplex, FInteger, FLogical, FReal } from './datatypes';
 
 type RealUnaryOperation = (value: number) => number;
 
@@ -59,6 +59,107 @@ function assertMatchingNumericTypes(
   assert(
     a.constructor === b.constructor && effectiveKind(a) === effectiveKind(b),
     `${name} operands must have the same numeric type and kind`,
+  );
+}
+
+function characterResult(characterCode: number): FCharacter {
+  assert(
+    Number.isInteger(characterCode) && characterCode >= 0 && characterCode <= 127,
+    'Character code must be an ASCII integer from 0 through 127',
+  );
+  return new FCharacter(String.fromCharCode(characterCode), { len: 1 });
+}
+
+function findSetPosition(
+  string: string,
+  set: string,
+  back: boolean,
+  invert: boolean,
+): number {
+  if (string.length === 0) {
+    return 0;
+  }
+
+  const start = back ? string.length - 1 : 0;
+  const end = back ? -1 : string.length;
+  const step = back ? -1 : 1;
+  for (let index = start; index !== end; index += step) {
+    const isInSet = set.includes(string[index]);
+    if (invert ? !isInSet : isInSet) {
+      return index + 1;
+    }
+  }
+  return 0;
+}
+
+export function achar(code: FInteger): FCharacter {
+  return characterResult(code.value);
+}
+
+export function char(code: FInteger): FCharacter {
+  return characterResult(code.value);
+}
+
+export function iachar(value: FCharacter): FInteger {
+  assert(value.value.length > 0, 'IACHAR requires a non-empty character value');
+  return new FInteger(value.value.charCodeAt(0), {
+    standard: value.standard,
+    kind: 4,
+  });
+}
+
+export function ichar(value: FCharacter): FInteger {
+  assert(value.value.length > 0, 'ICHAR requires a non-empty character value');
+  return new FInteger(value.value.charCodeAt(0), {
+    standard: value.standard,
+    kind: 4,
+  });
+}
+
+export function len(value: FCharacter): FInteger {
+  return new FInteger(value.len ?? value.value.length, {
+    standard: value.standard,
+    kind: 4,
+  });
+}
+
+export function index(
+  string: FCharacter,
+  substring: FCharacter,
+  back: FLogical = new FLogical(false),
+): FInteger {
+  const source = string.value;
+  const target = substring.value;
+  let position: number;
+  if (target.length === 0) {
+    position = source.length + 1;
+  } else if (back.value) {
+    position = source.lastIndexOf(target) + 1;
+  } else {
+    position = source.indexOf(target) + 1;
+  }
+  return new FInteger(position, { standard: string.standard, kind: 4 });
+}
+
+export function scan(
+  string: FCharacter,
+  set: FCharacter,
+  back: FLogical = new FLogical(false),
+): FInteger {
+  return new FInteger(
+    findSetPosition(string.value, set.value, back.value, false),
+    { standard: string.standard, kind: 4 },
+  );
+}
+
+export function verify(
+  string: FCharacter,
+  set: FCharacter,
+  back: FLogical = new FLogical(false),
+): FInteger {
+  return new FInteger(
+    findSetPosition(string.value, set.value, back.value, true),
+    { standard: string.standard, kind: 4 },
   );
 }
 

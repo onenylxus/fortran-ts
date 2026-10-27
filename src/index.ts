@@ -17,6 +17,7 @@ import {
 } from './datatypes';
 import { cmplx, dble, dcmplx, int, qcmplx, qreal, real } from './expressions';
 import {
+  achar,
   abs,
   acos,
   aimag,
@@ -25,6 +26,7 @@ import {
   asin,
   atan,
   atan2,
+  char,
   ccos,
   cexp,
   clog,
@@ -36,6 +38,10 @@ import {
   dim,
   dprod,
   exp,
+  iachar,
+  ichar,
+  index,
+  len,
   log,
   log10,
   max,
@@ -45,9 +51,11 @@ import {
   sign,
   sin,
   sinh,
+  scan,
   sqrt,
   tan,
   tanh,
+  verify,
 } from './intrinsics';
 import { Mix } from './mixed';
 import {
@@ -491,6 +499,50 @@ export default class Fortran {
 
   public static DPROD(a: FReal, b: FReal): FReal {
     return dprod(a, b);
+  }
+
+  public static ACHAR(code: FInteger): FCharacter {
+    return achar(code);
+  }
+
+  public static CHAR(code: FInteger): FCharacter {
+    return char(code);
+  }
+
+  public static IACHAR(value: FCharacter): FInteger {
+    return iachar(value);
+  }
+
+  public static ICHAR(value: FCharacter): FInteger {
+    return ichar(value);
+  }
+
+  public static LEN(value: FCharacter): FInteger {
+    return len(value);
+  }
+
+  public static INDEX(
+    string: FCharacter,
+    substring: FCharacter,
+    back?: FLogical,
+  ): FInteger {
+    return index(string, substring, back);
+  }
+
+  public static SCAN(
+    string: FCharacter,
+    set: FCharacter,
+    back?: FLogical,
+  ): FInteger {
+    return scan(string, set, back);
+  }
+
+  public static VERIFY(
+    string: FCharacter,
+    set: FCharacter,
+    back?: FLogical,
+  ): FInteger {
+    return verify(string, set, back);
   }
 
   public static EQ(a: FCharacter, b: FCharacter): FLogical;

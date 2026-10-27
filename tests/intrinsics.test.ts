@@ -150,6 +150,82 @@ describe('complex intrinsic functions', () => {
     });
   });
 
+  describe('character intrinsic functions', () => {
+    test('CHAR and ACHAR create ASCII characters; ICHAR and IACHAR return codes', () => {
+      const character = Fortran.ACHAR(Fortran.INTEGER(65));
+
+      expect(character.value).toBe('A');
+      expect(character.len).toBe(1);
+      expect(Fortran.CHAR(Fortran.INTEGER(97)).value).toBe('a');
+      expect(Fortran.IACHAR(character)).toMatchObject({ value: 65, kind: 4 });
+      expect(Fortran.ICHAR(Fortran.CHARACTER('z'))).toMatchObject({
+        value: 122,
+        kind: 4,
+      });
+    });
+
+    test('character-code intrinsics reject non-ASCII and empty values', () => {
+      expect(() => Fortran.ACHAR(Fortran.INTEGER(128))).toThrow(
+        'Character code must be an ASCII integer from 0 through 127',
+      );
+      expect(() => Fortran.CHAR(Fortran.INTEGER(-1))).toThrow(
+        'Character code must be an ASCII integer from 0 through 127',
+      );
+      expect(() => Fortran.ICHAR(Fortran.CHARACTER(''))).toThrow(
+        'ICHAR requires a non-empty character value',
+      );
+      expect(() => Fortran.IACHAR(Fortran.CHARACTER(''))).toThrow(
+        'IACHAR requires a non-empty character value',
+      );
+    });
+
+    test('LEN reports declared length including trailing blank padding', () => {
+      expect(Fortran.LEN(Fortran.CHARACTER('hi', 5))).toMatchObject({
+        value: 5,
+        kind: 4,
+      });
+      expect(Fortran.LEN(Fortran.CHARACTER('hi'))).toMatchObject({
+        value: 2,
+        kind: 4,
+      });
+    });
+
+    test('INDEX finds substrings in either direction and reports no match as zero', () => {
+      const string = Fortran.CHARACTER('ababa');
+      const substring = Fortran.CHARACTER('ba');
+
+      expect(Fortran.INDEX(string, substring).value).toBe(2);
+      expect(
+        Fortran.INDEX(string, substring, Fortran.LOGICAL(true)).value,
+      ).toBe(4);
+      expect(Fortran.INDEX(string, Fortran.CHARACTER('xy')).value).toBe(0);
+      expect(Fortran.INDEX(string, Fortran.CHARACTER('')).value).toBe(6);
+    });
+
+    test('SCAN finds a character from a set and supports backward search', () => {
+      const string = Fortran.CHARACTER('banana');
+      const set = Fortran.CHARACTER('an');
+
+      expect(Fortran.SCAN(string, set).value).toBe(2);
+      expect(Fortran.SCAN(string, set, Fortran.LOGICAL(true)).value).toBe(6);
+      expect(Fortran.SCAN(string, Fortran.CHARACTER('xyz')).value).toBe(0);
+      expect(Fortran.SCAN(string, Fortran.CHARACTER('')).value).toBe(0);
+    });
+
+    test('VERIFY finds a character outside a set and supports backward search', () => {
+      const string = Fortran.CHARACTER('baac');
+      const set = Fortran.CHARACTER('a');
+
+      expect(Fortran.VERIFY(string, set).value).toBe(1);
+      expect(Fortran.VERIFY(string, set, Fortran.LOGICAL(true)).value).toBe(4);
+      expect(Fortran.VERIFY(Fortran.CHARACTER('aaaa'), set).value).toBe(0);
+      expect(Fortran.VERIFY(string, Fortran.CHARACTER('')).value).toBe(1);
+      expect(
+        Fortran.VERIFY(string, Fortran.CHARACTER(''), Fortran.LOGICAL(true)).value,
+      ).toBe(4);
+    });
+  });
+
   test('complex exponential, logarithm, square root, sine, and cosine work', () => {
     const zero = Fortran.COMPLEX({ r: 0, i: 0 }, 16);
     const onePlusI = Fortran.COMPLEX({ r: 1, i: 1 }, 16);
