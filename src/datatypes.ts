@@ -258,6 +258,56 @@ export class FCharacter extends FIntrinsic<string> {
     return this._value;
   }
 
+  private getSubstringRange(
+    start?: number,
+    end?: number,
+  ): [number, number] {
+    const length = this.len ?? this.value.length;
+    const substringStart = start ?? 1;
+    const substringEnd = end ?? length;
+
+    assert(
+      Number.isInteger(substringStart),
+      'Substring start must be an integer',
+    );
+    assert(Number.isInteger(substringEnd), 'Substring end must be an integer');
+    assert(
+      substringStart >= 1 &&
+        substringStart <= substringEnd &&
+        substringEnd <= length,
+      'Substring bounds must satisfy 1 <= start <= end <= character length',
+    );
+
+    return [substringStart, substringEnd];
+  }
+
+  public substring(start?: number, end?: number): FCharacter {
+    const [substringStart, substringEnd] = this.getSubstringRange(start, end);
+
+    return new FCharacter(
+      this.value.slice(substringStart - 1, substringEnd),
+      {
+        standard: this.standard,
+        len: substringEnd - substringStart + 1,
+      },
+    );
+  }
+
+  public assignSubstring(value: string, start?: number, end?: number): void {
+    const [substringStart, substringEnd] = this.getSubstringRange(start, end);
+    assert(value.split('').every((c) => isAscii(c)));
+
+    const substringLength = substringEnd - substringStart + 1;
+    const replacement = value.substring(0, substringLength).padEnd(
+      substringLength,
+      ' ',
+    );
+    this.value =
+      this.value.slice(0, substringStart - 1) +
+      replacement +
+      this.value.slice(substringEnd);
+  }
+
   private set len(l: number | undefined) {
     if (l !== undefined) {
       assert(Number.isInteger(l));

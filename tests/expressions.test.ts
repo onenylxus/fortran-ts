@@ -144,6 +144,42 @@ describe('CHARACTER', () => {
     expect(char.value).toStrictEqual('goodb');
   });
 
+  test('extracts substrings with 1-based inclusive bounds', () => {
+    const char = Fortran.CHARACTER('Fortran', 7);
+
+    expect(char.substring(2, 4).value).toStrictEqual('ort');
+    expect(char.substring(undefined, 3).value).toStrictEqual('For');
+    expect(char.substring(5).value).toStrictEqual('ran');
+    expect(char.substring().value).toStrictEqual('Fortran');
+  });
+
+  test('assigns to substrings with truncation and blank padding', () => {
+    const char = Fortran.CHARACTER('Fortran', 7);
+
+    char.assignSubstring('TS', 2, 4);
+    expect(char.value).toStrictEqual('FTS ran');
+
+    char.assignSubstring('typed', 5, 7);
+    expect(char.value).toStrictEqual('FTS typ');
+  });
+
+  test('rejects substring bounds outside the character value', () => {
+    const char = Fortran.CHARACTER('Fortran', 7);
+
+    expect(() => char.substring(0, 2)).toThrow(
+      'Substring bounds must satisfy 1 <= start <= end <= character length',
+    );
+    expect(() => char.substring(3, 8)).toThrow(
+      'Substring bounds must satisfy 1 <= start <= end <= character length',
+    );
+    expect(() => char.substring(4, 2)).toThrow(
+      'Substring bounds must satisfy 1 <= start <= end <= character length',
+    );
+    expect(() => char.substring(1.5, 2)).toThrow(
+      'Substring start must be an integer',
+    );
+  });
+
   test('from array of string values', () => {
     const charArray = Fortran.CHARACTER(['hello', 'world']);
 
