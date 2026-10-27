@@ -1,4 +1,4 @@
-import { isRangedInteger } from '../src/utils';
+import { getDim, isRangedInteger } from '../src/utils';
 
 describe('isRangedInteger', () => {
   test('validates signed 8-bit bounds', () => {
@@ -28,5 +28,37 @@ describe('isRangedInteger', () => {
     expect(
       isRangedInteger(Number.MAX_SAFE_INTEGER + 1, 64, true),
     ).toStrictEqual(false);
+  });
+});
+
+describe('getDim', () => {
+  test('returns dimensions for a nested array', () => {
+    expect(
+      getDim([
+        [1, 2],
+        [3, 4],
+      ]),
+    ).toStrictEqual([2, 2]);
+  });
+
+  test('rejects nested arrays with unequal extents', () => {
+    expect(() =>
+      getDim([
+        [1, 2],
+        [3],
+      ]),
+    ).toThrow('Fortran arrays must be rectangular with equal extents');
+  });
+
+  test('rejects arrays with inconsistent rank', () => {
+    expect(() => getDim([[1, 2], 3])).toThrow(
+      'Fortran arrays must be rectangular with a consistent rank',
+    );
+  });
+
+  test('rejects empty dimensions', () => {
+    expect(() => getDim([])).toThrow(
+      'Fortran array dimensions must be non-empty',
+    );
   });
 });
