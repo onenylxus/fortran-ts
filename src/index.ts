@@ -1,3 +1,4 @@
+import assert from 'assert';
 import DatatypesJSON from '../assets/datatypes.json' with { type: 'json' };
 import {
   ArithmeticExpression,
@@ -15,6 +16,39 @@ import {
   FRealArray,
 } from './datatypes';
 import { cmplx, dble, dcmplx, int, qcmplx, qreal, real } from './expressions';
+import {
+  abs,
+  acos,
+  aimag,
+  aint,
+  anint,
+  asin,
+  atan,
+  atan2,
+  ccos,
+  cexp,
+  clog,
+  conjg,
+  cos,
+  cosh,
+  csin,
+  csqrt,
+  dim,
+  dprod,
+  exp,
+  log,
+  log10,
+  max,
+  min,
+  mod,
+  nint,
+  sign,
+  sin,
+  sinh,
+  sqrt,
+  tan,
+  tanh,
+} from './intrinsics';
 import { Mix } from './mixed';
 import {
   add,
@@ -39,6 +73,14 @@ import {
   xor,
 } from './operators';
 import { getDim, isComplex } from './utils';
+
+function areIntegers(values: (FInteger | FReal)[]): values is FInteger[] {
+  return values.every((value) => value instanceof FInteger);
+}
+
+function areReals(values: (FInteger | FReal)[]): values is FReal[] {
+  return values.every((value) => value instanceof FReal);
+}
 
 export default class Fortran {
   public static BYTE(value: Byte): FByte;
@@ -258,6 +300,197 @@ export default class Fortran {
       return new FReal(value, { ...FReal.DefaultOptions, kind });
     }
     return real(value);
+  }
+
+  public static ABS(value: FInteger): FInteger;
+  public static ABS(value: FReal): FReal;
+  public static ABS(value: FComplex): FReal;
+  public static ABS(value: FInteger | FReal | FComplex): FInteger | FReal {
+    if (value instanceof FInteger) {
+      return abs(value);
+    }
+    if (value instanceof FReal) {
+      return abs(value);
+    }
+    if (value instanceof FComplex) {
+      return abs(value);
+    }
+    assert.fail('ABS requires an integer, real, or complex value');
+  }
+
+  public static AINT(value: FReal): FReal {
+    return aint(value);
+  }
+
+  public static ANINT(value: FReal): FReal {
+    return anint(value);
+  }
+
+  public static NINT(value: FReal): FInteger {
+    return nint(value);
+  }
+
+  public static SIGN(value: FInteger, signSource: FInteger): FInteger;
+  public static SIGN(value: FReal, signSource: FReal): FReal;
+  public static SIGN(
+    value: FInteger | FReal,
+    signSource: FInteger | FReal,
+  ): FInteger | FReal {
+    if (value instanceof FInteger && signSource instanceof FInteger) {
+      return sign(value, signSource);
+    }
+    if (value instanceof FReal && signSource instanceof FReal) {
+      return sign(value, signSource);
+    }
+    assert.fail('SIGN operands must have the same numeric type and kind');
+  }
+
+  public static DIM(value: FInteger, subtrahend: FInteger): FInteger;
+  public static DIM(value: FReal, subtrahend: FReal): FReal;
+  public static DIM(
+    value: FInteger | FReal,
+    subtrahend: FInteger | FReal,
+  ): FInteger | FReal {
+    if (value instanceof FInteger && subtrahend instanceof FInteger) {
+      return dim(value, subtrahend);
+    }
+    if (value instanceof FReal && subtrahend instanceof FReal) {
+      return dim(value, subtrahend);
+    }
+    assert.fail('DIM operands must have the same numeric type and kind');
+  }
+
+  public static MOD(value: FInteger, divisor: FInteger): FInteger;
+  public static MOD(value: FReal, divisor: FReal): FReal;
+  public static MOD(
+    value: FInteger | FReal,
+    divisor: FInteger | FReal,
+  ): FInteger | FReal {
+    if (value instanceof FInteger && divisor instanceof FInteger) {
+      return mod(value, divisor);
+    }
+    if (value instanceof FReal && divisor instanceof FReal) {
+      return mod(value, divisor);
+    }
+    assert.fail('MOD operands must have the same numeric type and kind');
+  }
+
+  public static MAX(value: FInteger, ...others: FInteger[]): FInteger;
+  public static MAX(value: FReal, ...others: FReal[]): FReal;
+  public static MAX(
+    value: FInteger | FReal,
+    ...others: (FInteger | FReal)[]
+  ): FInteger | FReal {
+    if (value instanceof FInteger && areIntegers(others)) {
+      return max(value, ...others);
+    }
+    if (value instanceof FReal && areReals(others)) {
+      return max(value, ...others);
+    }
+    assert.fail('MAX arguments must have the same numeric type and kind');
+  }
+
+  public static MIN(value: FInteger, ...others: FInteger[]): FInteger;
+  public static MIN(value: FReal, ...others: FReal[]): FReal;
+  public static MIN(
+    value: FInteger | FReal,
+    ...others: (FInteger | FReal)[]
+  ): FInteger | FReal {
+    if (value instanceof FInteger && areIntegers(others)) {
+      return min(value, ...others);
+    }
+    if (value instanceof FReal && areReals(others)) {
+      return min(value, ...others);
+    }
+    assert.fail('MIN arguments must have the same numeric type and kind');
+  }
+
+  public static SQRT(value: FReal): FReal {
+    return sqrt(value);
+  }
+
+  public static EXP(value: FReal): FReal {
+    return exp(value);
+  }
+
+  public static LOG(value: FReal): FReal {
+    return log(value);
+  }
+
+  public static LOG10(value: FReal): FReal {
+    return log10(value);
+  }
+
+  public static SIN(value: FReal): FReal {
+    return sin(value);
+  }
+
+  public static COS(value: FReal): FReal {
+    return cos(value);
+  }
+
+  public static TAN(value: FReal): FReal {
+    return tan(value);
+  }
+
+  public static ASIN(value: FReal): FReal {
+    return asin(value);
+  }
+
+  public static ACOS(value: FReal): FReal {
+    return acos(value);
+  }
+
+  public static ATAN(value: FReal): FReal {
+    return atan(value);
+  }
+
+  public static ATAN2(y: FReal, x: FReal): FReal {
+    return atan2(y, x);
+  }
+
+  public static SINH(value: FReal): FReal {
+    return sinh(value);
+  }
+
+  public static COSH(value: FReal): FReal {
+    return cosh(value);
+  }
+
+  public static TANH(value: FReal): FReal {
+    return tanh(value);
+  }
+
+  public static AIMAG(value: FComplex): FReal {
+    return aimag(value);
+  }
+
+  public static CONJG(value: FComplex): FComplex {
+    return conjg(value);
+  }
+
+  public static CSQRT(value: FComplex): FComplex {
+    return csqrt(value);
+  }
+
+  public static CEXP(value: FComplex): FComplex {
+    return cexp(value);
+  }
+
+  public static CLOG(value: FComplex): FComplex {
+    return clog(value);
+  }
+
+  public static CSIN(value: FComplex): FComplex {
+    return csin(value);
+  }
+
+  public static CCOS(value: FComplex): FComplex {
+    return ccos(value);
+  }
+
+  public static DPROD(a: FReal, b: FReal): FReal {
+    return dprod(a, b);
   }
 
   public static EQ(a: FCharacter, b: FCharacter): FLogical;

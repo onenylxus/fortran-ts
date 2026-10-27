@@ -18,7 +18,7 @@ export function int(e: ArithmeticExpression | number): FInteger {
     });
   }
   if (e instanceof FComplex) {
-    return new FInteger(Math.floor(e.value.r), {
+    return new FInteger(Math.trunc(e.value.r), {
       ...FInteger.DefaultOptions,
       standard: e.standard,
       kind: 4,
@@ -39,7 +39,7 @@ export function int(e: ArithmeticExpression | number): FInteger {
     });
   }
   if (e instanceof FReal) {
-    return new FInteger(Math.floor(e.value), {
+    return new FInteger(Math.trunc(e.value), {
       ...FInteger.DefaultOptions,
       standard: e.standard,
       kind: 4,
