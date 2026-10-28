@@ -631,3 +631,62 @@ describe('REAL', () => {
     expect(realArray.value[2][2]).toBeCloseTo(0.57);
   });
 });
+
+describe('invalid constructor and assignment inputs', () => {
+  test('rejects invalid scalar values and kinds with clear errors', () => {
+    expect(() => new FByte(128)).toThrow(
+      'BYTE numeric values must be signed 8-bit integers',
+    );
+    expect(() => new FCharacter('€')).toThrow(
+      'CHARACTER values must contain only 8-bit characters',
+    );
+    expect(() => new FCharacter('x', { len: 0 })).toThrow(
+      'CHARACTER length must be a positive integer',
+    );
+    expect(() => new FComplex({ r: 1 } as unknown as Complex)).toThrow(
+      'COMPLEX imaginary part must be a number',
+    );
+    expect(
+      () => new FInteger(1, { kind: 3 as unknown as IntegerKind }),
+    ).toThrow('Invalid integer kind: 3');
+    expect(() => new FInteger(2147483648)).toThrow(
+      'INTEGER values must be safe integers within the signed 4-byte range',
+    );
+    expect(() => new FLogical(1 as unknown as boolean)).toThrow(
+      'LOGICAL values must be booleans',
+    );
+    expect(() => new FReal('1' as unknown as number)).toThrow(
+      'REAL values must be numbers',
+    );
+  });
+
+  test('rejects invalid array lengths, dimensions, and shapes', () => {
+    expect(() => new FCharacterArray(['x'], { len: 0 })).toThrow(
+      'CHARACTER length must be a positive integer',
+    );
+    expect(() => new FIntegerArray([1], { dim: [0] })).toThrow(
+      'Fortran array extents must be positive integers',
+    );
+    expect(() => new FIntegerArray([1], { dim: [2] })).toThrow(
+      'Fortran array extents must match declared dimensions',
+    );
+    expect(
+      () => new FIntegerArray([[1], [2, 3]], { dim: [2, 2] }),
+    ).toThrow('Fortran array extents must match declared dimensions');
+  });
+
+  test('rejects invalid reassigned values', () => {
+    const integer = new FInteger(1);
+    const character = new FCharacter('a');
+
+    expect(() => {
+      integer.value = 1.5;
+    }).toThrow('INTEGER values must be safe integers');
+    expect(() => {
+      character.value = '€';
+    }).toThrow('CHARACTER values must contain only 8-bit characters');
+    expect(() => character.assignSubstring('€')).toThrow(
+      'CHARACTER values must contain only 8-bit characters',
+    );
+  });
+});

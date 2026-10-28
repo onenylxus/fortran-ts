@@ -64,6 +64,13 @@ type FArrayOptions = {
 
 type FortranArrayValue<T> = (T | undefined | FortranArrayValue<T>)[];
 
+function assertCharacterLength(length: number | undefined): void {
+  assert(
+    length === undefined || (Number.isInteger(length) && length > 0),
+    'CHARACTER length must be a positive integer',
+  );
+}
+
 abstract class FArray<P, T extends { value: P } = FIntrinsic<P>>
   implements FDataOptions
 {
@@ -91,8 +98,11 @@ abstract class FArray<P, T extends { value: P } = FIntrinsic<P>>
   protected abstract build(v: P): T;
 
   protected fromValue(a: FortranArray<P>, d: number): FortranArray<T> {
-    assert(Array.isArray(a));
-    assert(a.length === this.dim[d]);
+    assert(Array.isArray(a), 'Fortran array values must be arrays');
+    assert(
+      a.length === this.dim[d],
+      'Fortran array extents must match declared dimensions',
+    );
 
     if (d === 0) {
       return (a as P[]).map((v) => this.build(v));
@@ -123,9 +133,15 @@ abstract class FArray<P, T extends { value: P } = FIntrinsic<P>>
   }
 
   protected set dim(d: Dimension) {
-    assert(Array.isArray(d));
-    assert(d.length >= 1 && d.length <= 7);
-    assert(d.every((l) => Number.isInteger(l) && l > 0));
+    assert(Array.isArray(d), 'Fortran array dimensions must be an array');
+    assert(
+      d.length >= 1 && d.length <= 7,
+      'Fortran array rank must be between 1 and 7',
+    );
+    assert(
+      d.every((l) => Number.isInteger(l) && l > 0),
+      'Fortran array extents must be positive integers',
+    );
     this._dim = d;
   }
 
@@ -153,18 +169,21 @@ export class FByte extends FIntrinsic<Byte> {
   public set value(v: Byte) {
     switch (typeof v) {
       case 'string':
-        assert(isAscii(v));
+        assert(isAscii(v), 'BYTE string values must be one 8-bit character');
         this._value = v;
         break;
       case 'number':
-        assert(isRangedInteger(v, 8, true));
+        assert(
+          isRangedInteger(v, 8, true),
+          'BYTE numeric values must be signed 8-bit integers',
+        );
         this._value = v;
         break;
       case 'boolean':
         this._value = v;
         break;
       default:
-        assert.fail();
+        assert.fail('BYTE values must be strings, numbers, or booleans');
     }
   }
 
@@ -247,7 +266,10 @@ export class FCharacter extends FIntrinsic<string> {
   }
 
   public set value(v: string) {
-    assert(v.split('').every((c) => isAscii(c)));
+    assert(
+      typeof v === 'string' && v.split('').every((c) => isAscii(c)),
+      'CHARACTER values must contain only 8-bit characters',
+    );
     this._value =
       this.len === undefined
         ? v
@@ -295,7 +317,10 @@ export class FCharacter extends FIntrinsic<string> {
 
   public assignSubstring(value: string, start?: number, end?: number): void {
     const [substringStart, substringEnd] = this.getSubstringRange(start, end);
-    assert(value.split('').every((c) => isAscii(c)));
+    assert(
+      typeof value === 'string' && value.split('').every((c) => isAscii(c)),
+      'CHARACTER values must contain only 8-bit characters',
+    );
 
     const substringLength = substringEnd - substringStart + 1;
     const replacement = value.substring(0, substringLength).padEnd(
@@ -309,10 +334,7 @@ export class FCharacter extends FIntrinsic<string> {
   }
 
   private set len(l: number | undefined) {
-    if (l !== undefined) {
-      assert(Number.isInteger(l));
-      assert(l > 0);
-    }
+    assertCharacterLength(l);
     this._len = l;
   }
 
@@ -346,6 +368,7 @@ export class FCharacterArray extends FArray<string> {
       FCharacterArray.DefaultOptions.description,
     );
 
+    assertCharacterLength(options.len);
     this._elementLen = options.len;
     this.dim = options.dim ?? FCharacterArray.DefaultOptions.dim;
     this.value = value;
@@ -395,9 +418,18 @@ export class FComplex extends FIntrinsic<Complex> {
   }
 
   public set value(v: Complex) {
-    assert(typeof v === 'object' && v !== null);
-    assert('r' in v && typeof v.r === 'number');
-    assert('i' in v && typeof v.i === 'number');
+    assert(
+      typeof v === 'object' && v !== null,
+      'COMPLEX values must be objects with numeric real and imaginary parts',
+    );
+    assert(
+      'r' in v && typeof v.r === 'number',
+      'COMPLEX real part must be a number',
+    );
+    assert(
+      'i' in v && typeof v.i === 'number',
+      'COMPLEX imaginary part must be a number',
+    );
     this._value = v;
   }
 
@@ -494,7 +526,10 @@ export class FInteger extends FIntrinsic<number> {
   }
 
   public set value(v: number) {
-    assert(isRangedInteger(v, (this.kind ?? 4) * 8, true));
+    assert(
+      isRangedInteger(v, (this.kind ?? 4) * 8, true),
+      `INTEGER values must be safe integers within the signed ${this.kind ?? 4}-byte range`,
+    );
     this._value = v;
   }
 
@@ -588,7 +623,7 @@ export class FLogical extends FIntrinsic<boolean> {
   }
 
   public set value(v: boolean) {
-    assert(typeof v === 'boolean');
+    assert(typeof v === 'boolean', 'LOGICAL values must be booleans');
     this._value = v;
   }
 
@@ -679,7 +714,7 @@ export class FReal extends FIntrinsic<number> {
   }
 
   public set value(v: number) {
-    assert(typeof v === 'number');
+    assert(typeof v === 'number', 'REAL values must be numbers');
     this._value = v;
   }
 
