@@ -227,6 +227,14 @@ export default class Fortran {
   }
   public static INTEGER = Fortran.INT;
 
+  public static IFIX(value: FReal): FInteger {
+    return int(value);
+  }
+
+  public static IDINT(value: FReal): FInteger {
+    return int(value);
+  }
+
   public static LOGICAL(value: boolean, kind?: LogicalKind): FLogical;
   public static LOGICAL(
     value: FortranArray<boolean>,
@@ -310,6 +318,14 @@ export default class Fortran {
     return real(value);
   }
 
+  public static FLOAT(value: FInteger): FReal {
+    return real(value);
+  }
+
+  public static SNGL(value: FReal): FReal {
+    return real(value);
+  }
+
   public static ABS(value: FInteger): FInteger;
   public static ABS(value: FReal): FReal;
   public static ABS(value: FComplex): FReal;
@@ -330,11 +346,23 @@ export default class Fortran {
     return aint(value);
   }
 
+  public static DINT(value: FReal): FReal {
+    return dble(aint(value));
+  }
+
   public static ANINT(value: FReal): FReal {
     return anint(value);
   }
 
+  public static DNINT(value: FReal): FReal {
+    return dble(anint(value));
+  }
+
   public static NINT(value: FReal): FInteger {
+    return nint(value);
+  }
+
+  public static IDNINT(value: FReal): FInteger {
     return nint(value);
   }
 

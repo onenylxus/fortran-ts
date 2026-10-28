@@ -33,6 +33,44 @@ describe('numeric intrinsic functions', () => {
     expect(Fortran.INT(Fortran.COMPLEX({ r: -2.9, i: 7 })).value).toBe(-2);
   });
 
+  test('specific conversion intrinsics return their required default kinds', () => {
+    const singlePrecision = Fortran.FLOAT(Fortran.INTEGER(16777217));
+    const doublePrecision = Fortran.DBLE(-2.9);
+    const roundedSingle = Fortran.SNGL(Fortran.DBLE(1.234567890123));
+
+    expect(singlePrecision).toBeInstanceOf(FReal);
+    expect(singlePrecision).toMatchObject({ value: 16777216, kind: 4 });
+    expect(Fortran.IFIX(Fortran.REAL(-2.9))).toMatchObject({
+      value: -2,
+      kind: 4,
+    });
+    expect(Fortran.IDINT(doublePrecision)).toMatchObject({
+      value: -2,
+      kind: 4,
+    });
+    expect(roundedSingle).toMatchObject({
+      value: Math.fround(1.234567890123),
+      kind: 4,
+    });
+  });
+
+  test('double-precision rounding intrinsics return the required kinds', () => {
+    const doublePrecision = Fortran.DBLE(-2.5);
+
+    expect(Fortran.DINT(doublePrecision)).toMatchObject({
+      value: -2,
+      kind: 8,
+    });
+    expect(Fortran.DNINT(doublePrecision)).toMatchObject({
+      value: -3,
+      kind: 8,
+    });
+    expect(Fortran.IDNINT(doublePrecision)).toMatchObject({
+      value: -3,
+      kind: 4,
+    });
+  });
+
   test('SIGN uses the sign of the second argument', () => {
     expect(Fortran.SIGN(Fortran.INTEGER(-5, 2), Fortran.INTEGER(-1, 2))).toMatchObject({
       value: -5,
