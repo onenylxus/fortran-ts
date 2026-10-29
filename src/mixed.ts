@@ -136,7 +136,7 @@ function promote(
     return new FInteger(toNumber(e), { kind: kind as IntegerKind });
   }
   if (target === FLogical) {
-    const value = e instanceof FLogical ? e.value : Boolean(e.value);
+    const value = Boolean(toNumber(e));
     return new FLogical(value, { kind: kind as LogicalKind });
   }
   if (target === FReal) {
@@ -204,6 +204,13 @@ export function mix<
       assertIntegerKind(resultKind);
       c = promote(a, FInteger, resultKind) as Mix<A, B>;
       d = promote(b, FInteger, resultKind) as Mix<A, B>;
+    } else if (
+      (a instanceof FByte && b instanceof FLogical) ||
+      (a instanceof FLogical && b instanceof FByte)
+    ) {
+      assertLogicalKind(resultKind);
+      c = promote(a, FLogical, resultKind) as Mix<A, B>;
+      d = promote(b, FLogical, resultKind) as Mix<A, B>;
     } else if (a instanceof FInteger && b instanceof FLogical) {
       assertIntegerKind(resultKind);
       c = promote(a, FInteger, resultKind) as Mix<A, B>;

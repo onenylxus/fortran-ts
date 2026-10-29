@@ -151,6 +151,10 @@ abstract class FArray<P, T extends { value: P } = FIntrinsic<P>>
     }
     return this._dim;
   }
+
+  public get rank(): number {
+    return this.dim.length;
+  }
 }
 
 type FByteOptions = FIntrinsicOptions;

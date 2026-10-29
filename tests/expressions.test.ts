@@ -397,6 +397,7 @@ describe('INT (alias INTEGER)', () => {
     expect(intArray).toBeInstanceOf(FIntegerArray);
     assert(intArray instanceof FIntegerArray);
     expect(intArray.dim).toStrictEqual([3]);
+    expect(intArray.rank).toBe(1);
 
     expect(intArray.value[1]).toStrictEqual(1);
     expect(intArray.value[2]).toStrictEqual(2);
@@ -424,6 +425,7 @@ describe('INT (alias INTEGER)', () => {
     expect(intArray).toBeInstanceOf(FIntegerArray);
     assert(intArray instanceof FIntegerArray);
     expect(intArray.dim).toStrictEqual([2, 2]);
+    expect(intArray.rank).toBe(2);
 
     expect(intArray.value[1][1]).toStrictEqual(1);
     expect(intArray.value[1][2]).toStrictEqual(2);

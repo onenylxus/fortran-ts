@@ -793,6 +793,32 @@ describe('ADD', () => {
   });
 });
 
+describe('byte and logical promotion edge cases', () => {
+  test('converts byte values numerically instead of treating their strings as truthy', () => {
+    expect(Fortran.ADD(Fortran.BYTE(0), Fortran.LOGICAL(false))).toMatchObject({
+      value: false,
+      kind: 4,
+    });
+    expect(Fortran.ADD(Fortran.BYTE(2), Fortran.LOGICAL(false))).toMatchObject({
+      value: true,
+      kind: 4,
+    });
+    expect(Fortran.EQ(Fortran.BYTE(0), Fortran.LOGICAL(false)).value).toBe(true);
+  });
+
+  test('promotes equal-rank byte and kind-one logical values in either order', () => {
+    expect(
+      Fortran.ADD(Fortran.BYTE(0), Fortran.LOGICAL(false, 1)),
+    ).toMatchObject({ value: false, kind: 1 });
+    expect(
+      Fortran.ADD(Fortran.LOGICAL(false, 1), Fortran.BYTE(0)),
+    ).toMatchObject({ value: false, kind: 1 });
+    expect(
+      Fortran.ADD(Fortran.BYTE(1), Fortran.LOGICAL(false, 1)),
+    ).toMatchObject({ value: true, kind: 1 });
+  });
+});
+
 describe('SUB', () => {
   test('with bytes', () => {
     const a = Fortran.BYTE('c');
