@@ -207,7 +207,10 @@ export function eq(
   b: OperatorOperand,
 ): FLogical | FLogicalArray {
   const arrayResult = applyArrayOperation(a, b, (left, right) =>
-    eq(left as ArithmeticExpression | FCharacter, right as ArithmeticExpression | FCharacter),
+    eq(
+      left as ArithmeticExpression | FCharacter,
+      right as ArithmeticExpression | FCharacter,
+    ),
   );
   if (arrayResult !== undefined) {
     assert(arrayResult instanceof FLogicalArray);
@@ -220,10 +223,7 @@ export function eq(
     });
   }
 
-  const { c, d } = mix(
-    a as ArithmeticExpression,
-    b as ArithmeticExpression,
-  );
+  const { c, d } = mix(a as ArithmeticExpression, b as ArithmeticExpression);
 
   if (c instanceof FByte && d instanceof FByte) {
     return new FLogical(byteToNumber(c.value) === byteToNumber(d.value), {
@@ -264,7 +264,10 @@ export function lt(
   b: OperatorOperand,
 ): FLogical | FLogicalArray {
   const arrayResult = applyArrayOperation(a, b, (left, right) =>
-    lt(left as ArithmeticExpression | FCharacter, right as ArithmeticExpression | FCharacter),
+    lt(
+      left as ArithmeticExpression | FCharacter,
+      right as ArithmeticExpression | FCharacter,
+    ),
   );
   if (arrayResult !== undefined) {
     assert(arrayResult instanceof FLogicalArray);
@@ -319,7 +322,10 @@ export function le(
   b: OperatorOperand,
 ): FLogical | FLogicalArray {
   const arrayResult = applyArrayOperation(a, b, (left, right) =>
-    le(left as ArithmeticExpression | FCharacter, right as ArithmeticExpression | FCharacter),
+    le(
+      left as ArithmeticExpression | FCharacter,
+      right as ArithmeticExpression | FCharacter,
+    ),
   );
   if (arrayResult !== undefined) {
     assert(arrayResult instanceof FLogicalArray);
@@ -374,7 +380,10 @@ export function gt(
   b: OperatorOperand,
 ): FLogical | FLogicalArray {
   const arrayResult = applyArrayOperation(a, b, (left, right) =>
-    gt(left as ArithmeticExpression | FCharacter, right as ArithmeticExpression | FCharacter),
+    gt(
+      left as ArithmeticExpression | FCharacter,
+      right as ArithmeticExpression | FCharacter,
+    ),
   );
   if (arrayResult !== undefined) {
     assert(arrayResult instanceof FLogicalArray);
@@ -429,7 +438,10 @@ export function ge(
   b: OperatorOperand,
 ): FLogical | FLogicalArray {
   const arrayResult = applyArrayOperation(a, b, (left, right) =>
-    ge(left as ArithmeticExpression | FCharacter, right as ArithmeticExpression | FCharacter),
+    ge(
+      left as ArithmeticExpression | FCharacter,
+      right as ArithmeticExpression | FCharacter,
+    ),
   );
   if (arrayResult !== undefined) {
     assert(arrayResult instanceof FLogicalArray);
@@ -507,7 +519,10 @@ export function ne(
   b: OperatorOperand,
 ): FLogical | FLogicalArray {
   const arrayResult = applyArrayOperation(a, b, (left, right) =>
-    ne(left as ArithmeticExpression | FCharacter, right as ArithmeticExpression | FCharacter),
+    ne(
+      left as ArithmeticExpression | FCharacter,
+      right as ArithmeticExpression | FCharacter,
+    ),
   );
   if (arrayResult !== undefined) {
     assert(arrayResult instanceof FLogicalArray);
@@ -520,10 +535,7 @@ export function ne(
     });
   }
 
-  const { c, d } = mix(
-    a as ArithmeticExpression,
-    b as ArithmeticExpression,
-  );
+  const { c, d } = mix(a as ArithmeticExpression, b as ArithmeticExpression);
 
   if (c instanceof FByte && d instanceof FByte) {
     return new FLogical(byteToNumber(c.value) !== byteToNumber(d.value), {
@@ -565,10 +577,7 @@ export function add(
   if (arrayResult !== undefined) {
     return arrayResult;
   }
-  const { c, d } = mix(
-    a as ArithmeticExpression,
-    b as ArithmeticExpression,
-  );
+  const { c, d } = mix(a as ArithmeticExpression, b as ArithmeticExpression);
   const kind = getKind(c);
 
   if (c instanceof FByte && d instanceof FByte) {
@@ -625,10 +634,7 @@ export function sub(
   if (arrayResult !== undefined) {
     return arrayResult;
   }
-  const { c, d } = mix(
-    a as ArithmeticExpression,
-    b as ArithmeticExpression,
-  );
+  const { c, d } = mix(a as ArithmeticExpression, b as ArithmeticExpression);
   const kind = getKind(c);
 
   if (c instanceof FByte && d instanceof FByte) {
@@ -689,10 +695,7 @@ export function mul(
   if (arrayResult !== undefined) {
     return arrayResult;
   }
-  const { c, d } = mix(
-    a as ArithmeticExpression,
-    b as ArithmeticExpression,
-  );
+  const { c, d } = mix(a as ArithmeticExpression, b as ArithmeticExpression);
   const kind = getKind(c);
 
   if (c instanceof FByte && d instanceof FByte) {
@@ -753,10 +756,7 @@ export function div(
   if (arrayResult !== undefined) {
     return arrayResult;
   }
-  const { c, d } = mix(
-    a as ArithmeticExpression,
-    b as ArithmeticExpression,
-  );
+  const { c, d } = mix(a as ArithmeticExpression, b as ArithmeticExpression);
   const kind = getKind(c);
 
   if (c instanceof FByte && d instanceof FByte) {
@@ -821,10 +821,7 @@ export function pow(
   if (arrayResult !== undefined) {
     return arrayResult;
   }
-  const { c, d } = mix(
-    a as ArithmeticExpression,
-    b as ArithmeticExpression,
-  );
+  const { c, d } = mix(a as ArithmeticExpression, b as ArithmeticExpression);
   const kind = getKind(c);
 
   if (c instanceof FByte && d instanceof FByte) {

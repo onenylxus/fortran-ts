@@ -37,10 +37,7 @@ function complexRealKind(source: FComplex): RealKind | undefined {
   }
 }
 
-function realUnary(
-  value: FReal,
-  operation: RealUnaryOperation,
-): FReal {
+function realUnary(value: FReal, operation: RealUnaryOperation): FReal {
   return realResult(operation(value.value), value);
 }
 
@@ -86,7 +83,9 @@ function assertSpecificArguments(
 
 function characterResult(characterCode: number): FCharacter {
   assert(
-    Number.isInteger(characterCode) && characterCode >= 0 && characterCode <= 127,
+    Number.isInteger(characterCode) &&
+      characterCode >= 0 &&
+      characterCode <= 127,
     'Character code must be an ASCII integer from 0 through 127',
   );
   return new FCharacter(String.fromCharCode(characterCode), { len: 1 });
@@ -389,10 +388,13 @@ export function dmax1(value: FReal, ...others: FReal[]): FReal {
 
 export function amax0(value: FInteger, ...others: FInteger[]): FReal {
   assertSpecificArguments([value, ...others], 4, 'AMAX0');
-  return new FReal(Math.max(value.value, ...others.map((other) => other.value)), {
-    standard: value.standard,
-    kind: 4,
-  });
+  return new FReal(
+    Math.max(value.value, ...others.map((other) => other.value)),
+    {
+      standard: value.standard,
+      kind: 4,
+    },
+  );
 }
 
 export function max1(value: FReal, ...others: FReal[]): FInteger {
@@ -420,10 +422,13 @@ export function dmin1(value: FReal, ...others: FReal[]): FReal {
 
 export function amin0(value: FInteger, ...others: FInteger[]): FReal {
   assertSpecificArguments([value, ...others], 4, 'AMIN0');
-  return new FReal(Math.min(value.value, ...others.map((other) => other.value)), {
-    standard: value.standard,
-    kind: 4,
-  });
+  return new FReal(
+    Math.min(value.value, ...others.map((other) => other.value)),
+    {
+      standard: value.standard,
+      kind: 4,
+    },
+  );
 }
 
 export function min1(value: FReal, ...others: FReal[]): FInteger {
@@ -600,10 +605,7 @@ export function aimag(value: FComplex): FReal {
 }
 
 export function conjg(value: FComplex): FComplex {
-  return complexResult(
-    { r: value.value.r, i: -value.value.i },
-    value,
-  );
+  return complexResult({ r: value.value.r, i: -value.value.i }, value);
 }
 
 export function csqrt(value: FComplex): FComplex {

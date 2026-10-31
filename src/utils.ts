@@ -85,8 +85,5 @@ export function getDim(dim: unknown): Dimension {
     'Fortran arrays must be rectangular with equal extents',
   );
 
-  return [
-    dim.length,
-    ...childDimensions[0],
-  ] as Dimension;
+  return [dim.length, ...childDimensions[0]] as Dimension;
 }

@@ -144,7 +144,8 @@ function promote(
   kind: number,
 ): ArithmeticExpression {
   if (target === FComplex) {
-    const value = e instanceof FComplex ? e.value : numberToComplex(toNumber(e));
+    const value =
+      e instanceof FComplex ? e.value : numberToComplex(toNumber(e));
     return new FComplex(value, {
       standard: e.standard,
       kind: kind as ComplexKind,
@@ -180,9 +181,7 @@ export function mix<
   const rankB = getRank(b);
   const resultRank = Math.max(rankA, rankB);
   const resultKind =
-    rankA === rankB
-      ? getEqualRankKind(a, b)
-      : getKind(rankA > rankB ? a : b);
+    rankA === rankB ? getEqualRankKind(a, b) : getKind(rankA > rankB ? a : b);
 
   let c: Mix<A, B> | undefined;
   let d: Mix<A, B> | undefined;
