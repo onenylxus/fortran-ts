@@ -775,6 +775,110 @@ describe('invalid constructor and assignment inputs', () => {
     );
   });
 
+  test('flattens arrays in column-major order', () => {
+    const array = new FIntegerArray(
+      [
+        [1, 2, 3],
+        [4, 5, 6],
+      ],
+      { dim: [2, 3], bounds: [[0, 1], [-1, 1]] },
+    );
+
+    expect(array.toColumnMajorArray()).toStrictEqual([1, 4, 2, 5, 3, 6]);
+
+    array.setElement(99, 1, -1);
+    expect(array.toColumnMajorArray()).toStrictEqual([1, 99, 2, 5, 3, 6]);
+  });
+
+  test('flattens rank-one arrays without changing their order', () => {
+    const array = new FIntegerArray([3, 1, 2], { dim: [3] });
+
+    expect(array.toColumnMajorArray()).toStrictEqual([3, 1, 2]);
+  });
+
+  test('extracts sections with scalar selectors, bounds, and strides', () => {
+    const array = new FIntegerArray(
+      [
+        [1, 2, 3],
+        [4, 5, 6],
+      ],
+      {
+        kind: 8,
+        dim: [2, 3],
+        bounds: [[-1, 0], [4, 6]],
+      },
+    );
+
+    const section = array.getSection(0, {
+      lower: 6,
+      upper: 4,
+      stride: -2,
+    });
+    expect(section).toBeInstanceOf(FIntegerArray);
+    expect(section).toMatchObject({
+      dim: [2],
+      bounds: [[1, 2]],
+      value: [undefined, 6, 4],
+    });
+    expect((section as FIntegerArray).getElement(1).kind).toBe(8);
+
+    const defaultBoundsSection = array.getSection(-1, { stride: 2 });
+    expect(defaultBoundsSection).toMatchObject({
+      dim: [2],
+      value: [undefined, 1, 3],
+    });
+
+    const scalar = array.getSection(0, 5);
+    expect(scalar).toMatchObject({ value: 5, kind: 8 });
+
+    const characters = new FCharacterArray([['a', 'b']], {
+      len: 3,
+      dim: [1, 2],
+    });
+    const characterSection = characters.getSection(1, { lower: 2 });
+    expect(characterSection).toMatchObject({
+      value: [undefined, 'b  '],
+    });
+  });
+
+  test('assigns sections and validates selector and assignment shapes', () => {
+    const array = new FIntegerArray(
+      [
+        [1, 2, 3],
+        [4, 5, 6],
+      ],
+      { dim: [2, 3], bounds: [[-1, 0], [4, 6]] },
+    );
+
+    array.setSection(
+      [
+        [20, 30],
+        [50, 60],
+      ],
+      { lower: 0, upper: -1, stride: -1 },
+      { lower: 4, upper: 6, stride: 2 },
+    );
+    expect(array.toColumnMajorArray()).toStrictEqual([50, 20, 2, 5, 60, 30]);
+
+    expect(() => array.getSection()).toThrow(
+      'Fortran array sections must provide exactly 2 selectors',
+    );
+    expect(() =>
+      array.getSection(0, { lower: 4, upper: 6, stride: 0 }),
+    ).toThrow('Fortran array section stride must be a non-zero integer');
+    expect(() =>
+      array.getSection(0, { lower: 3, upper: 5 }),
+    ).toThrow(
+      'Fortran array section bounds must be within 4:6 in dimension 2',
+    );
+    expect(() =>
+      array.getSection(0, { lower: 4, upper: 6, stride: -1 }),
+    ).toThrow('Fortran array section bounds must follow the stride direction');
+    expect(() =>
+      array.setSection([1, 2, 3], 0, { lower: 4, upper: 6, stride: 2 }),
+    ).toThrow('Fortran array extents must match declared dimensions');
+  });
+
   test('rejects invalid reassigned values', () => {
     const integer = new FInteger(1);
     const character = new FCharacter('a');
