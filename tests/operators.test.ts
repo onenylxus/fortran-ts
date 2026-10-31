@@ -4,7 +4,10 @@ import {
   FCharacter,
   FComplex,
   FInteger,
+  FIntegerArray,
   FLogical,
+  FLogicalArray,
+  FRealArray,
   FReal,
 } from '../src/datatypes';
 
@@ -574,6 +577,113 @@ describe('ADD', () => {
 
     expect(c).toBeInstanceOf(FByte);
     expect(c.value).toStrictEqual('c');
+  });
+
+  describe('whole-array operators', () => {
+    test('applies mixed-mode arithmetic by position and starts result bounds at one', () => {
+      const integers = new FIntegerArray([2, 4], {
+        dim: [2],
+        bounds: [[-1, 0]],
+      });
+      const reals = new FRealArray([0.5, 1.5], {
+        dim: [2],
+        bounds: [[8, 9]],
+      });
+      const result = Fortran.ADD(integers, reals);
+
+      expect(result).toBeInstanceOf(FRealArray);
+      expect(result.bounds).toStrictEqual([[1, 2]]);
+      expect(result.toColumnMajorArray()).toStrictEqual([2.5, 5.5]);
+    });
+
+    test('matches multidimensional elements by position despite differing bounds', () => {
+      const left = new FIntegerArray(
+        [
+          [1, 2],
+          [3, 4],
+        ],
+        {
+          dim: [2, 2],
+          bounds: [[-1, 0], [4, 5]],
+        },
+      );
+      const right = new FIntegerArray(
+        [
+          [10, 20],
+          [30, 40],
+        ],
+        {
+          dim: [2, 2],
+          bounds: [[8, 9], [-3, -2]],
+        },
+      );
+      const result = Fortran.ADD(left, right);
+
+      expect(result.bounds).toStrictEqual([
+        [1, 2],
+        [1, 2],
+      ]);
+      expect(result.toColumnMajorArray()).toStrictEqual([11, 33, 22, 44]);
+    });
+
+    test('expands scalars across arrays and supports unary arithmetic', () => {
+      const values = Fortran.INTEGER([3, 5]);
+      const difference = Fortran.SUB(Fortran.INTEGER(10), values);
+      const product = Fortran.MUL(values, Fortran.INTEGER(2));
+      const negative = Fortran.UMINUS(values);
+
+      expect(difference).toBeInstanceOf(FIntegerArray);
+      expect(difference.toColumnMajorArray()).toStrictEqual([7, 5]);
+      expect(product.toColumnMajorArray()).toStrictEqual([6, 10]);
+      expect(negative.toColumnMajorArray()).toStrictEqual([-3, -5]);
+    });
+
+    test('applies division and exponentiation element-wise', () => {
+      const values = Fortran.REAL([2, 4]);
+
+      expect(
+        Fortran.DIV(values, Fortran.REAL(2)).toColumnMajorArray(),
+      ).toStrictEqual([1, 2]);
+      expect(
+        Fortran.POW(values, Fortran.INTEGER(2)).toColumnMajorArray(),
+      ).toStrictEqual([4, 16]);
+    });
+
+    test('applies logical and comparison operations element-wise', () => {
+      const left = Fortran.LOGICAL([true, false]);
+      const right = Fortran.LOGICAL([true, true]);
+      const conjunction = Fortran.AND(left, right);
+      const negation = Fortran.NOT(left);
+      const equality = Fortran.EQ(
+        Fortran.INTEGER([1, 2]),
+        Fortran.INTEGER([1, 3]),
+      );
+
+      expect(conjunction).toBeInstanceOf(FLogicalArray);
+      expect(conjunction.toColumnMajorArray()).toStrictEqual([true, false]);
+      expect(negation.toColumnMajorArray()).toStrictEqual([false, true]);
+      expect(equality.toColumnMajorArray()).toStrictEqual([true, false]);
+    });
+
+    test('concatenates character arrays with scalar expansion', () => {
+      const values = Fortran.CHARACTER(['A', 'BC'], 1);
+      const result = Fortran.CONCAT(values, Fortran.CHARACTER('!'));
+
+      expect(result.toColumnMajorArray()).toStrictEqual(['A!', 'B!']);
+      expect(result.bounds).toStrictEqual([[1, 2]]);
+    });
+
+    test('rejects non-conformable arrays and ordered complex comparisons', () => {
+      expect(() =>
+        Fortran.ADD(Fortran.INTEGER([1, 2]), Fortran.INTEGER([1, 2, 3])),
+      ).toThrow('Fortran array operands must have conformable shapes');
+      expect(() =>
+        Fortran.LT(
+          Fortran.COMPLEX([{ r: 1, i: 1 }]),
+          Fortran.COMPLEX([{ r: 2, i: 2 }]),
+        ),
+      ).toThrow('Ordering comparisons are not supported for complex values');
+    });
   });
 
   test('with byte and complex', () => {

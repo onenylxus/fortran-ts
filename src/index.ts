@@ -90,6 +90,32 @@ function areReals(values: (FInteger | FReal)[]): values is FReal[] {
   return values.every((value) => value instanceof FReal);
 }
 
+type ArithmeticArray =
+  | FByteArray
+  | FComplexArray
+  | FIntegerArray
+  | FLogicalArray
+  | FRealArray;
+type ArrayExpression =
+  | ArithmeticArray
+  | FCharacterArray;
+
+function isArithmeticArray(
+  value: ArithmeticExpression | ArithmeticArray,
+): value is ArithmeticArray {
+  return (
+    value instanceof FByteArray ||
+    value instanceof FComplexArray ||
+    value instanceof FIntegerArray ||
+    value instanceof FLogicalArray ||
+    value instanceof FRealArray
+  );
+}
+
+function isCharacterArray(value: unknown): value is FCharacterArray {
+  return value instanceof FCharacterArray;
+}
+
 export default class Fortran {
   public static BYTE(value: Byte): FByte;
   public static BYTE(value: FortranArray<Byte>): FByteArray;
@@ -588,13 +614,35 @@ export default class Fortran {
     B extends ArithmeticExpression,
   >(a: A, b: B): FLogical;
   public static EQ(
-    a: ArithmeticExpression | FCharacter,
-    b: ArithmeticExpression | FCharacter,
-  ): FLogical {
+    a: FCharacter | FCharacterArray,
+    b: FCharacter | FCharacterArray,
+  ): FLogicalArray;
+  public static EQ(
+    a: ArithmeticExpression | ArithmeticArray,
+    b: ArithmeticExpression | ArithmeticArray,
+  ): FLogicalArray;
+  public static EQ(
+    a: ArithmeticExpression | FCharacter | ArrayExpression,
+    b: ArithmeticExpression | FCharacter | ArrayExpression,
+  ): FLogical | FLogicalArray {
     if (a instanceof FCharacter && b instanceof FCharacter) {
       return eq(a, b);
     }
-    return eq(a as ArithmeticExpression, b as ArithmeticExpression);
+    if (
+      a instanceof FCharacter ||
+      b instanceof FCharacter ||
+      isCharacterArray(a) ||
+      isCharacterArray(b)
+    ) {
+      return eq(
+        a as FCharacter | FCharacterArray,
+        b as FCharacter | FCharacterArray,
+      );
+    }
+    return eq(
+      a as ArithmeticExpression | ArithmeticArray,
+      b as ArithmeticExpression | ArithmeticArray,
+    );
   }
 
   public static LT(a: FCharacter, b: FCharacter): FLogical;
@@ -603,10 +651,35 @@ export default class Fortran {
     B extends ArithmeticExpression,
   >(a: A, b: B): FLogical;
   public static LT(
-    a: ArithmeticExpression | FCharacter,
-    b: ArithmeticExpression | FCharacter,
-  ): FLogical {
-    return lt(a, b);
+    a: FCharacter | FCharacterArray,
+    b: FCharacter | FCharacterArray,
+  ): FLogicalArray;
+  public static LT(
+    a: ArithmeticExpression | ArithmeticArray,
+    b: ArithmeticExpression | ArithmeticArray,
+  ): FLogicalArray;
+  public static LT(
+    a: ArithmeticExpression | FCharacter | ArrayExpression,
+    b: ArithmeticExpression | FCharacter | ArrayExpression,
+  ): FLogical | FLogicalArray {
+    if (a instanceof FCharacter && b instanceof FCharacter) {
+      return lt(a, b);
+    }
+    if (
+      a instanceof FCharacter ||
+      b instanceof FCharacter ||
+      isCharacterArray(a) ||
+      isCharacterArray(b)
+    ) {
+      return lt(
+        a as FCharacter | FCharacterArray,
+        b as FCharacter | FCharacterArray,
+      );
+    }
+    return lt(
+      a as ArithmeticExpression | ArithmeticArray,
+      b as ArithmeticExpression | ArithmeticArray,
+    );
   }
 
   public static LE(a: FCharacter, b: FCharacter): FLogical;
@@ -615,10 +688,35 @@ export default class Fortran {
     B extends ArithmeticExpression,
   >(a: A, b: B): FLogical;
   public static LE(
-    a: ArithmeticExpression | FCharacter,
-    b: ArithmeticExpression | FCharacter,
-  ): FLogical {
-    return le(a, b);
+    a: FCharacter | FCharacterArray,
+    b: FCharacter | FCharacterArray,
+  ): FLogicalArray;
+  public static LE(
+    a: ArithmeticExpression | ArithmeticArray,
+    b: ArithmeticExpression | ArithmeticArray,
+  ): FLogicalArray;
+  public static LE(
+    a: ArithmeticExpression | FCharacter | ArrayExpression,
+    b: ArithmeticExpression | FCharacter | ArrayExpression,
+  ): FLogical | FLogicalArray {
+    if (a instanceof FCharacter && b instanceof FCharacter) {
+      return le(a, b);
+    }
+    if (
+      a instanceof FCharacter ||
+      b instanceof FCharacter ||
+      isCharacterArray(a) ||
+      isCharacterArray(b)
+    ) {
+      return le(
+        a as FCharacter | FCharacterArray,
+        b as FCharacter | FCharacterArray,
+      );
+    }
+    return le(
+      a as ArithmeticExpression | ArithmeticArray,
+      b as ArithmeticExpression | ArithmeticArray,
+    );
   }
 
   public static NE(a: FCharacter, b: FCharacter): FLogical;
@@ -627,13 +725,35 @@ export default class Fortran {
     B extends ArithmeticExpression,
   >(a: A, b: B): FLogical;
   public static NE(
-    a: ArithmeticExpression | FCharacter,
-    b: ArithmeticExpression | FCharacter,
-  ): FLogical {
+    a: FCharacter | FCharacterArray,
+    b: FCharacter | FCharacterArray,
+  ): FLogicalArray;
+  public static NE(
+    a: ArithmeticExpression | ArithmeticArray,
+    b: ArithmeticExpression | ArithmeticArray,
+  ): FLogicalArray;
+  public static NE(
+    a: ArithmeticExpression | FCharacter | ArrayExpression,
+    b: ArithmeticExpression | FCharacter | ArrayExpression,
+  ): FLogical | FLogicalArray {
     if (a instanceof FCharacter && b instanceof FCharacter) {
       return ne(a, b);
     }
-    return ne(a as ArithmeticExpression, b as ArithmeticExpression);
+    if (
+      a instanceof FCharacter ||
+      b instanceof FCharacter ||
+      isCharacterArray(a) ||
+      isCharacterArray(b)
+    ) {
+      return ne(
+        a as FCharacter | FCharacterArray,
+        b as FCharacter | FCharacterArray,
+      );
+    }
+    return ne(
+      a as ArithmeticExpression | ArithmeticArray,
+      b as ArithmeticExpression | ArithmeticArray,
+    );
   }
 
   public static GT(a: FCharacter, b: FCharacter): FLogical;
@@ -642,10 +762,35 @@ export default class Fortran {
     B extends ArithmeticExpression,
   >(a: A, b: B): FLogical;
   public static GT(
-    a: ArithmeticExpression | FCharacter,
-    b: ArithmeticExpression | FCharacter,
-  ): FLogical {
-    return gt(a, b);
+    a: FCharacter | FCharacterArray,
+    b: FCharacter | FCharacterArray,
+  ): FLogicalArray;
+  public static GT(
+    a: ArithmeticExpression | ArithmeticArray,
+    b: ArithmeticExpression | ArithmeticArray,
+  ): FLogicalArray;
+  public static GT(
+    a: ArithmeticExpression | FCharacter | ArrayExpression,
+    b: ArithmeticExpression | FCharacter | ArrayExpression,
+  ): FLogical | FLogicalArray {
+    if (a instanceof FCharacter && b instanceof FCharacter) {
+      return gt(a, b);
+    }
+    if (
+      a instanceof FCharacter ||
+      b instanceof FCharacter ||
+      isCharacterArray(a) ||
+      isCharacterArray(b)
+    ) {
+      return gt(
+        a as FCharacter | FCharacterArray,
+        b as FCharacter | FCharacterArray,
+      );
+    }
+    return gt(
+      a as ArithmeticExpression | ArithmeticArray,
+      b as ArithmeticExpression | ArithmeticArray,
+    );
   }
 
   public static GE(a: FCharacter, b: FCharacter): FLogical;
@@ -654,80 +799,212 @@ export default class Fortran {
     B extends ArithmeticExpression,
   >(a: A, b: B): FLogical;
   public static GE(
-    a: ArithmeticExpression | FCharacter,
-    b: ArithmeticExpression | FCharacter,
-  ): FLogical {
-    return ge(a, b);
+    a: FCharacter | FCharacterArray,
+    b: FCharacter | FCharacterArray,
+  ): FLogicalArray;
+  public static GE(
+    a: ArithmeticExpression | ArithmeticArray,
+    b: ArithmeticExpression | ArithmeticArray,
+  ): FLogicalArray;
+  public static GE(
+    a: ArithmeticExpression | FCharacter | ArrayExpression,
+    b: ArithmeticExpression | FCharacter | ArrayExpression,
+  ): FLogical | FLogicalArray {
+    if (a instanceof FCharacter && b instanceof FCharacter) {
+      return ge(a, b);
+    }
+    if (
+      a instanceof FCharacter ||
+      b instanceof FCharacter ||
+      isCharacterArray(a) ||
+      isCharacterArray(b)
+    ) {
+      return ge(
+        a as FCharacter | FCharacterArray,
+        b as FCharacter | FCharacterArray,
+      );
+    }
+    return ge(
+      a as ArithmeticExpression | ArithmeticArray,
+      b as ArithmeticExpression | ArithmeticArray,
+    );
   }
 
   public static ADD<
     A extends ArithmeticExpression,
     B extends ArithmeticExpression,
-  >(a: A, b: B): Mix<A, B> {
+  >(a: A, b: B): Mix<A, B>;
+  public static ADD(
+    a: ArithmeticExpression | ArithmeticArray,
+    b: ArithmeticExpression | ArithmeticArray,
+  ): ArrayExpression;
+  public static ADD(
+    a: ArithmeticExpression | ArithmeticArray,
+    b: ArithmeticExpression | ArithmeticArray,
+  ): ArithmeticExpression | ArrayExpression {
     return add(a, b);
   }
 
   public static SUB<
     A extends ArithmeticExpression,
     B extends ArithmeticExpression,
-  >(a: A, b: B): Mix<A, B> {
+  >(a: A, b: B): Mix<A, B>;
+  public static SUB(
+    a: ArithmeticExpression | ArithmeticArray,
+    b: ArithmeticExpression | ArithmeticArray,
+  ): ArrayExpression;
+  public static SUB(
+    a: ArithmeticExpression | ArithmeticArray,
+    b: ArithmeticExpression | ArithmeticArray,
+  ): ArithmeticExpression | ArrayExpression {
     return sub(a, b);
   }
 
   public static MUL<
     A extends ArithmeticExpression,
     B extends ArithmeticExpression,
-  >(a: A, b: B): Mix<A, B> {
+  >(a: A, b: B): Mix<A, B>;
+  public static MUL(
+    a: ArithmeticExpression | ArithmeticArray,
+    b: ArithmeticExpression | ArithmeticArray,
+  ): ArrayExpression;
+  public static MUL(
+    a: ArithmeticExpression | ArithmeticArray,
+    b: ArithmeticExpression | ArithmeticArray,
+  ): ArithmeticExpression | ArrayExpression {
     return mul(a, b);
   }
 
   public static DIV<
     A extends ArithmeticExpression,
     B extends ArithmeticExpression,
-  >(a: A, b: B): Mix<A, B> {
+  >(a: A, b: B): Mix<A, B>;
+  public static DIV(
+    a: ArithmeticExpression | ArithmeticArray,
+    b: ArithmeticExpression | ArithmeticArray,
+  ): ArrayExpression;
+  public static DIV(
+    a: ArithmeticExpression | ArithmeticArray,
+    b: ArithmeticExpression | ArithmeticArray,
+  ): ArithmeticExpression | ArrayExpression {
     return div(a, b);
   }
 
   public static POW<
     A extends ArithmeticExpression,
     B extends ArithmeticExpression,
-  >(a: A, b: B): Mix<A, B> {
+  >(a: A, b: B): Mix<A, B>;
+  public static POW(
+    a: ArithmeticExpression | ArithmeticArray,
+    b: ArithmeticExpression | ArithmeticArray,
+  ): ArrayExpression;
+  public static POW(
+    a: ArithmeticExpression | ArithmeticArray,
+    b: ArithmeticExpression | ArithmeticArray,
+  ): ArithmeticExpression | ArrayExpression {
     return pow(a, b);
   }
 
-  public static UPLUS<A extends ArithmeticExpression>(a: A): A {
+  public static UPLUS<A extends ArithmeticExpression>(a: A): A;
+  public static UPLUS(a: ArithmeticArray): ArrayExpression;
+  public static UPLUS(
+    a: ArithmeticExpression | ArithmeticArray,
+  ): ArithmeticExpression | ArrayExpression {
+    if (isArithmeticArray(a)) {
+      return uplus(a);
+    }
     return uplus(a);
   }
 
-  public static UMINUS<A extends ArithmeticExpression>(a: A): A {
+  public static UMINUS<A extends ArithmeticExpression>(a: A): A;
+  public static UMINUS(a: ArithmeticArray): ArrayExpression;
+  public static UMINUS(
+    a: ArithmeticExpression | ArithmeticArray,
+  ): ArithmeticExpression | ArrayExpression {
+    if (isArithmeticArray(a)) {
+      return uminus(a);
+    }
     return uminus(a);
   }
 
-  public static NOT(a: FLogical): FLogical {
+  public static NOT(a: FLogical): FLogical;
+  public static NOT(a: FLogicalArray): FLogicalArray;
+  public static NOT(a: FLogical | FLogicalArray): FLogical | FLogicalArray {
+    if (a instanceof FLogicalArray) {
+      return not(a);
+    }
     return not(a);
   }
 
-  public static AND(a: FLogical, b: FLogical): FLogical {
+  public static AND(a: FLogical, b: FLogical): FLogical;
+  public static AND(
+    a: FLogical | FLogicalArray,
+    b: FLogical | FLogicalArray,
+  ): FLogicalArray;
+  public static AND(
+    a: FLogical | FLogicalArray,
+    b: FLogical | FLogicalArray,
+  ): FLogical | FLogicalArray {
     return and(a, b);
   }
 
-  public static OR(a: FLogical, b: FLogical): FLogical {
+  public static OR(a: FLogical, b: FLogical): FLogical;
+  public static OR(
+    a: FLogical | FLogicalArray,
+    b: FLogical | FLogicalArray,
+  ): FLogicalArray;
+  public static OR(
+    a: FLogical | FLogicalArray,
+    b: FLogical | FLogicalArray,
+  ): FLogical | FLogicalArray {
     return or(a, b);
   }
 
-  public static NEQV(a: FLogical, b: FLogical): FLogical {
+  public static NEQV(a: FLogical, b: FLogical): FLogical;
+  public static NEQV(
+    a: FLogical | FLogicalArray,
+    b: FLogical | FLogicalArray,
+  ): FLogicalArray;
+  public static NEQV(
+    a: FLogical | FLogicalArray,
+    b: FLogical | FLogicalArray,
+  ): FLogical | FLogicalArray {
     return neqv(a, b);
   }
 
-  public static XOR(a: FLogical, b: FLogical): FLogical {
+  public static XOR(a: FLogical, b: FLogical): FLogical;
+  public static XOR(
+    a: FLogical | FLogicalArray,
+    b: FLogical | FLogicalArray,
+  ): FLogicalArray;
+  public static XOR(
+    a: FLogical | FLogicalArray,
+    b: FLogical | FLogicalArray,
+  ): FLogical | FLogicalArray {
     return xor(a, b);
   }
 
-  public static EQV(a: FLogical, b: FLogical): FLogical {
+  public static EQV(a: FLogical, b: FLogical): FLogical;
+  public static EQV(
+    a: FLogical | FLogicalArray,
+    b: FLogical | FLogicalArray,
+  ): FLogicalArray;
+  public static EQV(
+    a: FLogical | FLogicalArray,
+    b: FLogical | FLogicalArray,
+  ): FLogical | FLogicalArray {
     return eqv(a, b);
   }
 
-  public static CONCAT(a: FCharacter, b: FCharacter): FCharacter {
+  public static CONCAT(a: FCharacter, b: FCharacter): FCharacter;
+  public static CONCAT(
+    a: FCharacter | FCharacterArray,
+    b: FCharacter | FCharacterArray,
+  ): FCharacterArray;
+  public static CONCAT(
+    a: FCharacter | FCharacterArray,
+    b: FCharacter | FCharacterArray,
+  ): FCharacter | FCharacterArray {
     return concat(a, b);
   }
 }
