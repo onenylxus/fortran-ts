@@ -53,10 +53,13 @@ describe('numeric intrinsic functions', () => {
   test('specific conversion intrinsics return their required default kinds', () => {
     const singlePrecision = Fortran.FLOAT(Fortran.INTEGER(16777217));
     const doublePrecision = Fortran.DBLE(-2.9);
+    const doubleFloat = Fortran.DFLOAT(Fortran.INTEGER(16777217));
     const roundedSingle = Fortran.SNGL(Fortran.DBLE(1.234567890123));
 
     expect(singlePrecision).toBeInstanceOf(FReal);
     expect(singlePrecision).toMatchObject({ value: 16777216, kind: 4 });
+    expect(doubleFloat).toMatchObject({ value: 16777217, kind: 8 });
+    expect(doubleFloat.standard).toBe(Fortran.INTEGER(1).standard);
     expect(Fortran.IFIX(Fortran.REAL(-2.9))).toMatchObject({
       value: -2,
       kind: 4,
@@ -180,6 +183,42 @@ describe('numeric intrinsic functions', () => {
     });
   });
 
+  test('specific MAX and MIN names preserve their documented argument/result types', () => {
+    expect(Fortran.MAX0(Fortran.INTEGER(4), Fortran.INTEGER(9))).toMatchObject({
+      value: 9,
+    });
+    expect(Fortran.AMAX1(Fortran.REAL(4), Fortran.REAL(9))).toMatchObject({
+      value: 9,
+    });
+    expect(
+      Fortran.DMAX1(Fortran.REAL(4, 8), Fortran.REAL(9, 8)),
+    ).toMatchObject({ value: 9, kind: 8 });
+    expect(Fortran.AMAX0(Fortran.INTEGER(4), Fortran.INTEGER(9))).toMatchObject({
+      value: 9,
+      kind: 4,
+    });
+    expect(
+      Fortran.MAX1(Fortran.REAL(-2.2), Fortran.REAL(-1.7)),
+    ).toMatchObject({ value: -1, kind: 4 });
+
+    expect(Fortran.MIN0(Fortran.INTEGER(4), Fortran.INTEGER(9))).toMatchObject({
+      value: 4,
+    });
+    expect(Fortran.AMIN1(Fortran.REAL(4), Fortran.REAL(9))).toMatchObject({
+      value: 4,
+    });
+    expect(
+      Fortran.DMIN1(Fortran.REAL(4, 8), Fortran.REAL(9, 8)),
+    ).toMatchObject({ value: 4, kind: 8 });
+    expect(Fortran.AMIN0(Fortran.INTEGER(4), Fortran.INTEGER(9))).toMatchObject({
+      value: 4,
+      kind: 4,
+    });
+    expect(
+      Fortran.MIN1(Fortran.REAL(-2.2), Fortran.REAL(-1.7)),
+    ).toMatchObject({ value: -2, kind: 4 });
+  });
+
   test('rejects invalid operand type/kind combinations and missing values', () => {
     expect(() => Fortran.SIGN(Fortran.INTEGER(1), Fortran.REAL(1))).toThrow(
       'SIGN operands must have the same numeric type and kind',
@@ -192,6 +231,12 @@ describe('numeric intrinsic functions', () => {
     );
     expect(() => Fortran.MIN(Fortran.REAL(1), Fortran.REAL(2, 8))).toThrow(
       'MIN arguments must have the same numeric type and kind',
+    );
+    expect(() => Fortran.DMAX1(Fortran.REAL(1), Fortran.REAL(2))).toThrow(
+      'DMAX1 requires kind 8',
+    );
+    expect(() => Fortran.AMAX0(Fortran.INTEGER(1))).toThrow(
+      'AMAX0 requires at least two arguments',
     );
   });
 });
@@ -239,6 +284,30 @@ describe('real-valued intrinsic functions', () => {
       value: 0,
       kind: 8,
     });
+  });
+
+  test('double-precision hyperbolic specific names require and preserve kind eight', () => {
+    expect(Fortran.DSINH(Fortran.REAL(0, 8))).toMatchObject({
+      value: 0,
+      kind: 8,
+    });
+    expect(Fortran.DCOSH(Fortran.REAL(0, 8))).toMatchObject({
+      value: 1,
+      kind: 8,
+    });
+    expect(Fortran.DTANH(Fortran.REAL(0, 8))).toMatchObject({
+      value: 0,
+      kind: 8,
+    });
+    expect(() => Fortran.DSINH(Fortran.REAL(0))).toThrow(
+      'DSINH requires kind 8',
+    );
+    expect(() => Fortran.DCOSH(Fortran.REAL(0))).toThrow(
+      'DCOSH requires kind 8',
+    );
+    expect(() => Fortran.DTANH(Fortran.REAL(0))).toThrow(
+      'DTANH requires kind 8',
+    );
   });
 
   test('ATAN2 requires matching kinds', () => {
@@ -298,6 +367,24 @@ describe('complex intrinsic functions', () => {
         value: 2,
         kind: 4,
       });
+    });
+
+    test('lexical comparisons use character ordering with blank-padded operands', () => {
+      expect(
+        Fortran.LGE(Fortran.CHARACTER('abc '), Fortran.CHARACTER('abc')),
+      ).toMatchObject({ value: true });
+      expect(
+        Fortran.LGT(Fortran.CHARACTER('b'), Fortran.CHARACTER('A')),
+      ).toMatchObject({ value: true });
+      expect(
+        Fortran.LLE(Fortran.CHARACTER('abc'), Fortran.CHARACTER('abc ')),
+      ).toMatchObject({ value: true });
+      expect(
+        Fortran.LLT(Fortran.CHARACTER('A'), Fortran.CHARACTER('b')),
+      ).toMatchObject({ value: true });
+      expect(
+        Fortran.LLT(Fortran.CHARACTER('a'), Fortran.CHARACTER('A')),
+      ).toMatchObject({ value: false });
     });
 
     test('INDEX finds substrings in either direction and reports no match as zero', () => {

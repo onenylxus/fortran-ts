@@ -165,7 +165,7 @@ function applyArrayOperation(
   return createArrayExpression(resultValues, shape, flatResults[0]);
 }
 
-function compareCharacters(a: FCharacter, b: FCharacter): number {
+export function compareCharacters(a: FCharacter, b: FCharacter): number {
   const length = Math.max(a.value.length, b.value.length);
   const left = a.value.padEnd(length, ' ');
   const right = b.value.padEnd(length, ' ');

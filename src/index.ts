@@ -22,6 +22,10 @@ import {
   abs,
   alog,
   alog10,
+  amax0,
+  amax1,
+  amin0,
+  amin1,
   amod,
   acos,
   cabs,
@@ -34,6 +38,10 @@ import {
   datan,
   datan2,
   dabs,
+  dcosh,
+  dfloat,
+  dmax1,
+  dmin1,
   dcos,
   dexp,
   ddim,
@@ -41,9 +49,11 @@ import {
   dlog10,
   dmod,
   dsin,
+  dsinh,
   dsqrt,
   dsign,
   dtan,
+  dtanh,
   atan,
   atan2,
   char,
@@ -65,10 +75,18 @@ import {
   ichar,
   index,
   len,
+  lge,
+  lgt,
+  lle,
+  llt,
   log,
   log10,
   max,
+  max0,
+  max1,
   min,
+  min0,
+  min1,
   mod,
   nint,
   sign,
@@ -227,6 +245,10 @@ export default class Fortran {
     return dble(value as ArithmeticExpression);
   }
   public static DOUBLE_PRECISION = Fortran.DBLE;
+
+  public static DFLOAT(value: FInteger): FReal {
+    return dfloat(value);
+  }
 
   public static DCMPLX(value: Complex): FComplex;
   public static DCMPLX(value: ArithmeticExpression): FComplex;
@@ -524,6 +546,26 @@ export default class Fortran {
     assert.fail('MAX arguments must have the same numeric type and kind');
   }
 
+  public static MAX0(value: FInteger, ...others: FInteger[]): FInteger {
+    return max0(value, ...others);
+  }
+
+  public static AMAX1(value: FReal, ...others: FReal[]): FReal {
+    return amax1(value, ...others);
+  }
+
+  public static DMAX1(value: FReal, ...others: FReal[]): FReal {
+    return dmax1(value, ...others);
+  }
+
+  public static AMAX0(value: FInteger, ...others: FInteger[]): FReal {
+    return amax0(value, ...others);
+  }
+
+  public static MAX1(value: FReal, ...others: FReal[]): FInteger {
+    return max1(value, ...others);
+  }
+
   public static MIN(value: FInteger, ...others: FInteger[]): FInteger;
   public static MIN(value: FReal, ...others: FReal[]): FReal;
   public static MIN(
@@ -537,6 +579,26 @@ export default class Fortran {
       return min(value, ...others);
     }
     assert.fail('MIN arguments must have the same numeric type and kind');
+  }
+
+  public static MIN0(value: FInteger, ...others: FInteger[]): FInteger {
+    return min0(value, ...others);
+  }
+
+  public static AMIN1(value: FReal, ...others: FReal[]): FReal {
+    return amin1(value, ...others);
+  }
+
+  public static DMIN1(value: FReal, ...others: FReal[]): FReal {
+    return dmin1(value, ...others);
+  }
+
+  public static AMIN0(value: FInteger, ...others: FInteger[]): FReal {
+    return amin0(value, ...others);
+  }
+
+  public static MIN1(value: FReal, ...others: FReal[]): FInteger {
+    return min1(value, ...others);
   }
 
   public static SQRT(value: FReal): FReal {
@@ -639,8 +701,20 @@ export default class Fortran {
     return cosh(value);
   }
 
+  public static DSINH(value: FReal): FReal {
+    return dsinh(value);
+  }
+
   public static TANH(value: FReal): FReal {
     return tanh(value);
+  }
+
+  public static DCOSH(value: FReal): FReal {
+    return dcosh(value);
+  }
+
+  public static DTANH(value: FReal): FReal {
+    return dtanh(value);
   }
 
   public static DSQRT(value: FReal): FReal {
@@ -721,6 +795,22 @@ export default class Fortran {
     back?: FLogical,
   ): FInteger {
     return verify(string, set, back);
+  }
+
+  public static LGE(a: FCharacter, b: FCharacter): FLogical {
+    return lge(a, b);
+  }
+
+  public static LGT(a: FCharacter, b: FCharacter): FLogical {
+    return lgt(a, b);
+  }
+
+  public static LLE(a: FCharacter, b: FCharacter): FLogical {
+    return lle(a, b);
+  }
+
+  public static LLT(a: FCharacter, b: FCharacter): FLogical {
+    return llt(a, b);
   }
 
   public static EQ(a: FCharacter, b: FCharacter): FLogical;

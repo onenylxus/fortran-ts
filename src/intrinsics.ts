@@ -1,5 +1,6 @@
 import assert from 'assert';
 import { FCharacter, FComplex, FInteger, FLogical, FReal } from './datatypes';
+import { compareCharacters } from './operators';
 
 type RealUnaryOperation = (value: number) => number;
 
@@ -72,6 +73,15 @@ function assertMatchingNumericTypes(
     a.constructor === b.constructor && effectiveKind(a) === effectiveKind(b),
     `${name} operands must have the same numeric type and kind`,
   );
+}
+
+function assertSpecificArguments(
+  values: (FInteger | FReal)[],
+  kind: number,
+  name: string,
+): void {
+  assert(values.length >= 2, `${name} requires at least two arguments`);
+  values.forEach((value) => assertSpecificKind(value, kind, name));
 }
 
 function characterResult(characterCode: number): FCharacter {
@@ -362,6 +372,84 @@ export function min(
   return realResult(result, value);
 }
 
+export function max0(value: FInteger, ...others: FInteger[]): FInteger {
+  assertSpecificArguments([value, ...others], 4, 'MAX0');
+  return max(value, ...others);
+}
+
+export function amax1(value: FReal, ...others: FReal[]): FReal {
+  assertSpecificArguments([value, ...others], 4, 'AMAX1');
+  return max(value, ...others);
+}
+
+export function dmax1(value: FReal, ...others: FReal[]): FReal {
+  assertSpecificArguments([value, ...others], 8, 'DMAX1');
+  return max(value, ...others);
+}
+
+export function amax0(value: FInteger, ...others: FInteger[]): FReal {
+  assertSpecificArguments([value, ...others], 4, 'AMAX0');
+  return new FReal(Math.max(value.value, ...others.map((other) => other.value)), {
+    standard: value.standard,
+    kind: 4,
+  });
+}
+
+export function max1(value: FReal, ...others: FReal[]): FInteger {
+  assertSpecificArguments([value, ...others], 4, 'MAX1');
+  return new FInteger(
+    Math.trunc(Math.max(value.value, ...others.map((other) => other.value))),
+    { standard: value.standard, kind: 4 },
+  );
+}
+
+export function min0(value: FInteger, ...others: FInteger[]): FInteger {
+  assertSpecificArguments([value, ...others], 4, 'MIN0');
+  return min(value, ...others);
+}
+
+export function amin1(value: FReal, ...others: FReal[]): FReal {
+  assertSpecificArguments([value, ...others], 4, 'AMIN1');
+  return min(value, ...others);
+}
+
+export function dmin1(value: FReal, ...others: FReal[]): FReal {
+  assertSpecificArguments([value, ...others], 8, 'DMIN1');
+  return min(value, ...others);
+}
+
+export function amin0(value: FInteger, ...others: FInteger[]): FReal {
+  assertSpecificArguments([value, ...others], 4, 'AMIN0');
+  return new FReal(Math.min(value.value, ...others.map((other) => other.value)), {
+    standard: value.standard,
+    kind: 4,
+  });
+}
+
+export function min1(value: FReal, ...others: FReal[]): FInteger {
+  assertSpecificArguments([value, ...others], 4, 'MIN1');
+  return new FInteger(
+    Math.trunc(Math.min(value.value, ...others.map((other) => other.value))),
+    { standard: value.standard, kind: 4 },
+  );
+}
+
+export function lge(a: FCharacter, b: FCharacter): FLogical {
+  return new FLogical(compareCharacters(a, b) >= 0, { standard: a.standard });
+}
+
+export function lgt(a: FCharacter, b: FCharacter): FLogical {
+  return new FLogical(compareCharacters(a, b) > 0, { standard: a.standard });
+}
+
+export function lle(a: FCharacter, b: FCharacter): FLogical {
+  return new FLogical(compareCharacters(a, b) <= 0, { standard: a.standard });
+}
+
+export function llt(a: FCharacter, b: FCharacter): FLogical {
+  return new FLogical(compareCharacters(a, b) < 0, { standard: a.standard });
+}
+
 export function sqrt(value: FReal): FReal {
   return realUnary(value, Math.sqrt);
 }
@@ -476,11 +564,26 @@ export function sinh(value: FReal): FReal {
   return realUnary(value, Math.sinh);
 }
 
+export function dsinh(value: FReal): FReal {
+  assertSpecificKind(value, 8, 'DSINH');
+  return realUnary(value, Math.sinh);
+}
+
 export function cosh(value: FReal): FReal {
   return realUnary(value, Math.cosh);
 }
 
+export function dcosh(value: FReal): FReal {
+  assertSpecificKind(value, 8, 'DCOSH');
+  return realUnary(value, Math.cosh);
+}
+
 export function tanh(value: FReal): FReal {
+  return realUnary(value, Math.tanh);
+}
+
+export function dtanh(value: FReal): FReal {
+  assertSpecificKind(value, 8, 'DTANH');
   return realUnary(value, Math.tanh);
 }
 
@@ -549,6 +652,13 @@ export function ccos(value: FComplex): FComplex {
 export function dprod(a: FReal, b: FReal): FReal {
   return new FReal(a.value * b.value, {
     standard: a.standard,
+    kind: 8,
+  });
+}
+
+export function dfloat(value: FInteger): FReal {
+  return new FReal(value.value, {
+    standard: value.standard,
     kind: 8,
   });
 }
