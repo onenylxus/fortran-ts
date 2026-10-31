@@ -24,6 +24,16 @@ function compareCharacters(a: FCharacter, b: FCharacter): number {
   return 0;
 }
 
+function assertOrderable(
+  a: ArithmeticExpression | FCharacter,
+  b: ArithmeticExpression | FCharacter,
+): void {
+  assert(
+    !(a instanceof FComplex || b instanceof FComplex),
+    'Ordering comparisons are not supported for complex values',
+  );
+}
+
 export function eq(a: FCharacter, b: FCharacter): FLogical;
 export function eq<
   A extends ArithmeticExpression,
@@ -64,6 +74,7 @@ export function lt(
   a: ArithmeticExpression | FCharacter,
   b: ArithmeticExpression | FCharacter,
 ): FLogical {
+  assertOrderable(a, b);
   if (a instanceof FCharacter && b instanceof FCharacter) {
     return new FLogical(compareCharacters(a, b) < 0);
   }
@@ -72,12 +83,6 @@ export function lt(
 
   if (c instanceof FByte && d instanceof FByte) {
     return new FLogical(byteToNumber(c.value) < byteToNumber(d.value));
-  }
-  if (c instanceof FComplex && d instanceof FComplex) {
-    return new FLogical(
-      c.value.r < d.value.r ||
-        (c.value.r === d.value.r && c.value.i < d.value.i),
-    );
   }
   if (c instanceof FInteger && d instanceof FInteger) {
     return new FLogical(c.value < d.value);
@@ -95,6 +100,7 @@ export function le(
   a: ArithmeticExpression | FCharacter,
   b: ArithmeticExpression | FCharacter,
 ): FLogical {
+  assertOrderable(a, b);
   if (a instanceof FCharacter && b instanceof FCharacter) {
     return new FLogical(compareCharacters(a, b) <= 0);
   }
@@ -103,12 +109,6 @@ export function le(
 
   if (c instanceof FByte && d instanceof FByte) {
     return new FLogical(byteToNumber(c.value) <= byteToNumber(d.value));
-  }
-  if (c instanceof FComplex && d instanceof FComplex) {
-    return new FLogical(
-      c.value.r < d.value.r ||
-        (c.value.r === d.value.r && c.value.i <= d.value.i),
-    );
   }
   if (c instanceof FInteger && d instanceof FInteger) {
     return new FLogical(c.value <= d.value);
@@ -126,6 +126,7 @@ export function gt(
   a: ArithmeticExpression | FCharacter,
   b: ArithmeticExpression | FCharacter,
 ): FLogical {
+  assertOrderable(a, b);
   if (a instanceof FCharacter && b instanceof FCharacter) {
     return new FLogical(compareCharacters(a, b) > 0);
   }
@@ -134,12 +135,6 @@ export function gt(
 
   if (c instanceof FByte && d instanceof FByte) {
     return new FLogical(byteToNumber(c.value) > byteToNumber(d.value));
-  }
-  if (c instanceof FComplex && d instanceof FComplex) {
-    return new FLogical(
-      c.value.r > d.value.r ||
-        (c.value.r === d.value.r && c.value.i > d.value.i),
-    );
   }
   if (c instanceof FInteger && d instanceof FInteger) {
     return new FLogical(c.value > d.value);
@@ -157,6 +152,7 @@ export function ge(
   a: ArithmeticExpression | FCharacter,
   b: ArithmeticExpression | FCharacter,
 ): FLogical {
+  assertOrderable(a, b);
   if (a instanceof FCharacter && b instanceof FCharacter) {
     return new FLogical(compareCharacters(a, b) >= 0);
   }
@@ -165,12 +161,6 @@ export function ge(
 
   if (c instanceof FByte && d instanceof FByte) {
     return new FLogical(byteToNumber(c.value) >= byteToNumber(d.value));
-  }
-  if (c instanceof FComplex && d instanceof FComplex) {
-    return new FLogical(
-      c.value.r > d.value.r ||
-        (c.value.r === d.value.r && c.value.i >= d.value.i),
-    );
   }
   if (c instanceof FInteger && d instanceof FInteger) {
     return new FLogical(c.value >= d.value);

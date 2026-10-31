@@ -1522,6 +1522,37 @@ describe('kind-aware mixed-mode arithmetic', () => {
     });
   });
 
+  describe('complex ordering comparisons', () => {
+    test.each([
+      ['LT', (a: FComplex, b: FComplex) => Fortran.LT(a, b)],
+      ['LE', (a: FComplex, b: FComplex) => Fortran.LE(a, b)],
+      ['GT', (a: FComplex, b: FComplex) => Fortran.GT(a, b)],
+      ['GE', (a: FComplex, b: FComplex) => Fortran.GE(a, b)],
+    ] as const)(
+      '%s rejects complex operands in either position',
+      (_name, compare) => {
+        const left = Fortran.COMPLEX({ r: 1, i: 2 });
+        const right = Fortran.COMPLEX({ r: 3, i: 4 });
+
+        expect(() => compare(left, right)).toThrow(
+          'Ordering comparisons are not supported for complex values',
+        );
+        expect(() => compare(right, left)).toThrow(
+          'Ordering comparisons are not supported for complex values',
+        );
+      },
+    );
+
+    test('retains equality and inequality comparisons for complex values', () => {
+      const left = Fortran.COMPLEX({ r: 1, i: 2 });
+      const equal = Fortran.COMPLEX({ r: 1, i: 2 });
+      const different = Fortran.COMPLEX({ r: 1, i: 3 });
+
+      expect(Fortran.EQ(left, equal).value).toBe(true);
+      expect(Fortran.NE(left, different).value).toBe(true);
+    });
+  });
+
   test('resolves equal-rank logical and integer operands as integer', () => {
     const logical = Fortran.LOGICAL(true, 4);
     const integer = Fortran.INTEGER(2, 2);
