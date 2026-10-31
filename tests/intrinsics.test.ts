@@ -17,6 +17,23 @@ describe('numeric intrinsic functions', () => {
     });
   });
 
+  test('Fortran 77 specific ABS names enforce their type and result kinds', () => {
+    expect(Fortran.IABS(Fortran.INTEGER(-5))).toMatchObject({ value: 5 });
+    expect(Fortran.DABS(Fortran.REAL(-2.5, 8))).toMatchObject({
+      value: 2.5,
+      kind: 8,
+    });
+    expect(
+      Fortran.CABS(Fortran.COMPLEX({ r: 3, i: 4 }, 8)),
+    ).toMatchObject({ value: 5, kind: 4 });
+    expect(() => Fortran.DABS(Fortran.REAL(1))).toThrow(
+      'DABS requires kind 8',
+    );
+    expect(() => Fortran.CABS(Fortran.COMPLEX({ r: 1, i: 0 }, 16))).toThrow(
+      'CABS requires kind 8',
+    );
+  });
+
   test('AINT truncates toward zero and ANINT rounds ties away from zero', () => {
     expect(Fortran.AINT(Fortran.REAL(-2.9)).value).toBe(-2);
     expect(Fortran.ANINT(Fortran.REAL(2.5)).value).toBe(3);
@@ -80,6 +97,61 @@ describe('numeric intrinsic functions', () => {
       value: 2.5,
       kind: 8,
     });
+  });
+
+  test('specific DIM, MOD, and SIGN names preserve their declared precision', () => {
+    expect(
+      Fortran.IDIM(Fortran.INTEGER(8), Fortran.INTEGER(3)),
+    ).toMatchObject({ value: 5 });
+    expect(Fortran.ADIM(Fortran.REAL(8), Fortran.REAL(3))).toMatchObject({
+      value: 5,
+    });
+    expect(
+      Fortran.DDIM(Fortran.REAL(8, 8), Fortran.REAL(3, 8)),
+    ).toMatchObject({ value: 5, kind: 8 });
+    expect(Fortran.AMOD(Fortran.REAL(-7.5), Fortran.REAL(3)).value).toBe(-1.5);
+    expect(
+      Fortran.DMOD(Fortran.REAL(-7.5, 8), Fortran.REAL(3, 8)),
+    ).toMatchObject({ value: -1.5, kind: 8 });
+    expect(
+      Fortran.ISIGN(Fortran.INTEGER(5), Fortran.INTEGER(-1)),
+    ).toMatchObject({ value: -5 });
+    expect(
+      Fortran.DSIGN(Fortran.REAL(5, 8), Fortran.REAL(-1, 8)),
+    ).toMatchObject({ value: -5, kind: 8 });
+    expect(() =>
+      Fortran.IDIM(Fortran.INTEGER(1, 2), Fortran.INTEGER(0, 2)),
+    ).toThrow('IDIM requires kind 4');
+  });
+
+  test('specific double-precision math names require and preserve kind eight', () => {
+    expect(Fortran.ALOG(Fortran.REAL(Math.E)).value).toBeCloseTo(1);
+    expect(Fortran.ALOG10(Fortran.REAL(100)).value).toBe(2);
+    expect(Fortran.DEXP(Fortran.REAL(1, 8))).toMatchObject({
+      value: Math.E,
+      kind: 8,
+    });
+    expect(Fortran.DLOG(Fortran.REAL(Math.E, 8)).value).toBeCloseTo(1);
+    expect(Fortran.DLOG10(Fortran.REAL(100, 8)).value).toBe(2);
+    expect(Fortran.DSQRT(Fortran.REAL(9, 8))).toMatchObject({
+      value: 3,
+      kind: 8,
+    });
+    expect(Fortran.DSIN(Fortran.REAL(0, 8)).value).toBe(0);
+    expect(Fortran.DCOS(Fortran.REAL(0, 8)).value).toBe(1);
+    expect(Fortran.DTAN(Fortran.REAL(0, 8)).value).toBe(0);
+    expect(Fortran.DASIN(Fortran.REAL(0, 8)).value).toBe(0);
+    expect(Fortran.DACOS(Fortran.REAL(1, 8)).value).toBe(0);
+    expect(Fortran.DATAN(Fortran.REAL(0, 8)).value).toBe(0);
+    expect(
+      Fortran.DATAN2(Fortran.REAL(1, 8), Fortran.REAL(1, 8)).value,
+    ).toBeCloseTo(Math.PI / 4);
+    expect(() => Fortran.DEXP(Fortran.REAL(1))).toThrow(
+      'DEXP requires kind 8',
+    );
+    expect(() =>
+      Fortran.DATAN2(Fortran.REAL(1, 8), Fortran.REAL(1, 4)),
+    ).toThrow('DATAN2 requires kind 8');
   });
 
   test('DIM returns the positive part of the difference', () => {

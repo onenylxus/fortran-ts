@@ -18,12 +18,32 @@ import {
 import { cmplx, dble, dcmplx, int, qcmplx, qreal, real } from './expressions';
 import {
   achar,
+  adim,
   abs,
+  alog,
+  alog10,
+  amod,
   acos,
+  cabs,
   aimag,
   aint,
   anint,
   asin,
+  dasin,
+  dacos,
+  datan,
+  datan2,
+  dabs,
+  dcos,
+  dexp,
+  ddim,
+  dlog,
+  dlog10,
+  dmod,
+  dsin,
+  dsqrt,
+  dsign,
+  dtan,
   atan,
   atan2,
   char,
@@ -39,6 +59,9 @@ import {
   dprod,
   exp,
   iachar,
+  idim,
+  iabs,
+  isign,
   ichar,
   index,
   len,
@@ -377,6 +400,18 @@ export default class Fortran {
     assert.fail('ABS requires an integer, real, or complex value');
   }
 
+  public static IABS(value: FInteger): FInteger {
+    return iabs(value);
+  }
+
+  public static DABS(value: FReal): FReal {
+    return dabs(value);
+  }
+
+  public static CABS(value: FComplex): FReal {
+    return cabs(value);
+  }
+
   public static AINT(value: FReal): FReal {
     return aint(value);
   }
@@ -416,6 +451,14 @@ export default class Fortran {
     assert.fail('SIGN operands must have the same numeric type and kind');
   }
 
+  public static ISIGN(value: FInteger, signSource: FInteger): FInteger {
+    return isign(value, signSource);
+  }
+
+  public static DSIGN(value: FReal, signSource: FReal): FReal {
+    return dsign(value, signSource);
+  }
+
   public static DIM(value: FInteger, subtrahend: FInteger): FInteger;
   public static DIM(value: FReal, subtrahend: FReal): FReal;
   public static DIM(
@@ -431,6 +474,18 @@ export default class Fortran {
     assert.fail('DIM operands must have the same numeric type and kind');
   }
 
+  public static IDIM(value: FInteger, subtrahend: FInteger): FInteger {
+    return idim(value, subtrahend);
+  }
+
+  public static ADIM(value: FReal, subtrahend: FReal): FReal {
+    return adim(value, subtrahend);
+  }
+
+  public static DDIM(value: FReal, subtrahend: FReal): FReal {
+    return ddim(value, subtrahend);
+  }
+
   public static MOD(value: FInteger, divisor: FInteger): FInteger;
   public static MOD(value: FReal, divisor: FReal): FReal;
   public static MOD(
@@ -444,6 +499,14 @@ export default class Fortran {
       return mod(value, divisor);
     }
     assert.fail('MOD operands must have the same numeric type and kind');
+  }
+
+  public static AMOD(value: FReal, divisor: FReal): FReal {
+    return amod(value, divisor);
+  }
+
+  public static DMOD(value: FReal, divisor: FReal): FReal {
+    return dmod(value, divisor);
   }
 
   public static MAX(value: FInteger, ...others: FInteger[]): FInteger;
@@ -488,36 +551,84 @@ export default class Fortran {
     return log(value);
   }
 
+  public static ALOG(value: FReal): FReal {
+    return alog(value);
+  }
+
+  public static DLOG(value: FReal): FReal {
+    return dlog(value);
+  }
+
   public static LOG10(value: FReal): FReal {
     return log10(value);
+  }
+
+  public static ALOG10(value: FReal): FReal {
+    return alog10(value);
+  }
+
+  public static DLOG10(value: FReal): FReal {
+    return dlog10(value);
+  }
+
+  public static DEXP(value: FReal): FReal {
+    return dexp(value);
   }
 
   public static SIN(value: FReal): FReal {
     return sin(value);
   }
 
+  public static DSIN(value: FReal): FReal {
+    return dsin(value);
+  }
+
   public static COS(value: FReal): FReal {
     return cos(value);
+  }
+
+  public static DCOS(value: FReal): FReal {
+    return dcos(value);
   }
 
   public static TAN(value: FReal): FReal {
     return tan(value);
   }
 
+  public static DTAN(value: FReal): FReal {
+    return dtan(value);
+  }
+
   public static ASIN(value: FReal): FReal {
     return asin(value);
+  }
+
+  public static DASIN(value: FReal): FReal {
+    return dasin(value);
   }
 
   public static ACOS(value: FReal): FReal {
     return acos(value);
   }
 
+  public static DACOS(value: FReal): FReal {
+    return dacos(value);
+  }
+
   public static ATAN(value: FReal): FReal {
     return atan(value);
   }
 
+  public static DATAN(value: FReal): FReal {
+    return datan(value);
+  }
+
   public static ATAN2(y: FReal, x: FReal): FReal {
     return atan2(y, x);
+  }
+
+  public static DATAN2(y: FReal, x: FReal): FReal {
+    return datan2(y, x);
   }
 
   public static SINH(value: FReal): FReal {
@@ -530,6 +641,10 @@ export default class Fortran {
 
   public static TANH(value: FReal): FReal {
     return tanh(value);
+  }
+
+  public static DSQRT(value: FReal): FReal {
+    return dsqrt(value);
   }
 
   public static AIMAG(value: FComplex): FReal {

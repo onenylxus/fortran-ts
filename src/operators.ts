@@ -215,7 +215,9 @@ export function eq(
   }
 
   if (a instanceof FCharacter && b instanceof FCharacter) {
-    return new FLogical(compareCharacters(a, b) === 0);
+    return new FLogical(compareCharacters(a, b) === 0, {
+      standard: a.standard,
+    });
   }
 
   const { c, d } = mix(
@@ -224,19 +226,23 @@ export function eq(
   );
 
   if (c instanceof FByte && d instanceof FByte) {
-    return new FLogical(byteToNumber(c.value) === byteToNumber(d.value));
+    return new FLogical(byteToNumber(c.value) === byteToNumber(d.value), {
+      standard: c.standard,
+    });
   }
   if (c instanceof FComplex && d instanceof FComplex) {
-    return new FLogical(c.value.r === d.value.r && c.value.i === d.value.i);
+    return new FLogical(c.value.r === d.value.r && c.value.i === d.value.i, {
+      standard: c.standard,
+    });
   }
   if (c instanceof FInteger && d instanceof FInteger) {
-    return new FLogical(c.value === d.value);
+    return new FLogical(c.value === d.value, { standard: c.standard });
   }
   if (c instanceof FLogical && d instanceof FLogical) {
-    return new FLogical(c.value === d.value);
+    return new FLogical(c.value === d.value, { standard: c.standard });
   }
   if (c instanceof FReal && d instanceof FReal) {
-    return new FLogical(c.value === d.value);
+    return new FLogical(c.value === d.value, { standard: c.standard });
   }
   assert.fail('Unsupported arithmetic operands');
 }
@@ -270,22 +276,28 @@ export function lt(
     b as ArithmeticExpression | FCharacter,
   );
   if (a instanceof FCharacter && b instanceof FCharacter) {
-    return new FLogical(compareCharacters(a, b) < 0);
+    return new FLogical(compareCharacters(a, b) < 0, {
+      standard: a.standard,
+    });
   }
 
   const { c, d } = mix(a as ArithmeticExpression, b as ArithmeticExpression);
 
   if (c instanceof FByte && d instanceof FByte) {
-    return new FLogical(byteToNumber(c.value) < byteToNumber(d.value));
+    return new FLogical(byteToNumber(c.value) < byteToNumber(d.value), {
+      standard: c.standard,
+    });
   }
   if (c instanceof FInteger && d instanceof FInteger) {
-    return new FLogical(c.value < d.value);
+    return new FLogical(c.value < d.value, { standard: c.standard });
   }
   if (c instanceof FLogical && d instanceof FLogical) {
-    return new FLogical(Number(c.value) < Number(d.value));
+    return new FLogical(Number(c.value) < Number(d.value), {
+      standard: c.standard,
+    });
   }
   if (c instanceof FReal && d instanceof FReal) {
-    return new FLogical(c.value < d.value);
+    return new FLogical(c.value < d.value, { standard: c.standard });
   }
   assert.fail('Unsupported arithmetic operands');
 }
@@ -319,22 +331,28 @@ export function le(
     b as ArithmeticExpression | FCharacter,
   );
   if (a instanceof FCharacter && b instanceof FCharacter) {
-    return new FLogical(compareCharacters(a, b) <= 0);
+    return new FLogical(compareCharacters(a, b) <= 0, {
+      standard: a.standard,
+    });
   }
 
   const { c, d } = mix(a as ArithmeticExpression, b as ArithmeticExpression);
 
   if (c instanceof FByte && d instanceof FByte) {
-    return new FLogical(byteToNumber(c.value) <= byteToNumber(d.value));
+    return new FLogical(byteToNumber(c.value) <= byteToNumber(d.value), {
+      standard: c.standard,
+    });
   }
   if (c instanceof FInteger && d instanceof FInteger) {
-    return new FLogical(c.value <= d.value);
+    return new FLogical(c.value <= d.value, { standard: c.standard });
   }
   if (c instanceof FLogical && d instanceof FLogical) {
-    return new FLogical(Number(c.value) <= Number(d.value));
+    return new FLogical(Number(c.value) <= Number(d.value), {
+      standard: c.standard,
+    });
   }
   if (c instanceof FReal && d instanceof FReal) {
-    return new FLogical(c.value <= d.value);
+    return new FLogical(c.value <= d.value, { standard: c.standard });
   }
   assert.fail('Unsupported arithmetic operands');
 }
@@ -368,22 +386,28 @@ export function gt(
     b as ArithmeticExpression | FCharacter,
   );
   if (a instanceof FCharacter && b instanceof FCharacter) {
-    return new FLogical(compareCharacters(a, b) > 0);
+    return new FLogical(compareCharacters(a, b) > 0, {
+      standard: a.standard,
+    });
   }
 
   const { c, d } = mix(a as ArithmeticExpression, b as ArithmeticExpression);
 
   if (c instanceof FByte && d instanceof FByte) {
-    return new FLogical(byteToNumber(c.value) > byteToNumber(d.value));
+    return new FLogical(byteToNumber(c.value) > byteToNumber(d.value), {
+      standard: c.standard,
+    });
   }
   if (c instanceof FInteger && d instanceof FInteger) {
-    return new FLogical(c.value > d.value);
+    return new FLogical(c.value > d.value, { standard: c.standard });
   }
   if (c instanceof FLogical && d instanceof FLogical) {
-    return new FLogical(Number(c.value) > Number(d.value));
+    return new FLogical(Number(c.value) > Number(d.value), {
+      standard: c.standard,
+    });
   }
   if (c instanceof FReal && d instanceof FReal) {
-    return new FLogical(c.value > d.value);
+    return new FLogical(c.value > d.value, { standard: c.standard });
   }
   assert.fail('Unsupported arithmetic operands');
 }
@@ -417,22 +441,28 @@ export function ge(
     b as ArithmeticExpression | FCharacter,
   );
   if (a instanceof FCharacter && b instanceof FCharacter) {
-    return new FLogical(compareCharacters(a, b) >= 0);
+    return new FLogical(compareCharacters(a, b) >= 0, {
+      standard: a.standard,
+    });
   }
 
   const { c, d } = mix(a as ArithmeticExpression, b as ArithmeticExpression);
 
   if (c instanceof FByte && d instanceof FByte) {
-    return new FLogical(byteToNumber(c.value) >= byteToNumber(d.value));
+    return new FLogical(byteToNumber(c.value) >= byteToNumber(d.value), {
+      standard: c.standard,
+    });
   }
   if (c instanceof FInteger && d instanceof FInteger) {
-    return new FLogical(c.value >= d.value);
+    return new FLogical(c.value >= d.value, { standard: c.standard });
   }
   if (c instanceof FLogical && d instanceof FLogical) {
-    return new FLogical(Number(c.value) >= Number(d.value));
+    return new FLogical(Number(c.value) >= Number(d.value), {
+      standard: c.standard,
+    });
   }
   if (c instanceof FReal && d instanceof FReal) {
-    return new FLogical(c.value >= d.value);
+    return new FLogical(c.value >= d.value, { standard: c.standard });
   }
   assert.fail('Unsupported arithmetic operands');
 }
@@ -455,6 +485,7 @@ export function concat(
   }
   return new FCharacter(
     `${(a as FCharacter).value}${(b as FCharacter).value}`,
+    { standard: (a as FCharacter).standard },
   );
 }
 
@@ -484,7 +515,9 @@ export function ne(
   }
 
   if (a instanceof FCharacter && b instanceof FCharacter) {
-    return new FLogical(compareCharacters(a, b) !== 0);
+    return new FLogical(compareCharacters(a, b) !== 0, {
+      standard: a.standard,
+    });
   }
 
   const { c, d } = mix(
@@ -493,19 +526,23 @@ export function ne(
   );
 
   if (c instanceof FByte && d instanceof FByte) {
-    return new FLogical(byteToNumber(c.value) !== byteToNumber(d.value));
+    return new FLogical(byteToNumber(c.value) !== byteToNumber(d.value), {
+      standard: c.standard,
+    });
   }
   if (c instanceof FComplex && d instanceof FComplex) {
-    return new FLogical(c.value.r !== d.value.r || c.value.i !== d.value.i);
+    return new FLogical(c.value.r !== d.value.r || c.value.i !== d.value.i, {
+      standard: c.standard,
+    });
   }
   if (c instanceof FInteger && d instanceof FInteger) {
-    return new FLogical(c.value !== d.value);
+    return new FLogical(c.value !== d.value, { standard: c.standard });
   }
   if (c instanceof FLogical && d instanceof FLogical) {
-    return new FLogical(c.value !== d.value);
+    return new FLogical(c.value !== d.value, { standard: c.standard });
   }
   if (c instanceof FReal && d instanceof FReal) {
-    return new FLogical(c.value !== d.value);
+    return new FLogical(c.value !== d.value, { standard: c.standard });
   }
   assert.fail('Unsupported arithmetic operands');
 }
@@ -537,6 +574,7 @@ export function add(
   if (c instanceof FByte && d instanceof FByte) {
     return new FByte(
       numberToByte(byteToNumber(c.value) + byteToNumber(d.value)),
+      { standard: c.standard },
     ) as ArithmeticExpression;
   }
   if (c instanceof FComplex && d instanceof FComplex) {
@@ -545,21 +583,24 @@ export function add(
         r: c.value.r + d.value.r,
         i: c.value.i + d.value.i,
       },
-      { kind: kind as ComplexKind },
+      { standard: c.standard, kind: kind as ComplexKind },
     ) as ArithmeticExpression;
   }
   if (c instanceof FInteger && d instanceof FInteger) {
     return new FInteger(c.value + d.value, {
+      standard: c.standard,
       kind: kind as IntegerKind,
     }) as ArithmeticExpression;
   }
   if (c instanceof FLogical && d instanceof FLogical) {
     return new FLogical(Boolean(c.value || d.value), {
+      standard: c.standard,
       kind: kind as LogicalKind,
     }) as ArithmeticExpression;
   }
   if (c instanceof FReal && d instanceof FReal) {
     return new FReal(c.value + d.value, {
+      standard: c.standard,
       kind: kind as RealKind,
     }) as ArithmeticExpression;
   }
@@ -593,6 +634,7 @@ export function sub(
   if (c instanceof FByte && d instanceof FByte) {
     return new FByte(
       numberToByte(byteToNumber(c.value) - byteToNumber(d.value)),
+      { standard: c.standard },
     ) as ArithmeticExpression;
   }
 
@@ -602,24 +644,27 @@ export function sub(
         r: c.value.r - d.value.r,
         i: c.value.i - d.value.i,
       },
-      { kind: kind as ComplexKind },
+      { standard: c.standard, kind: kind as ComplexKind },
     ) as ArithmeticExpression;
   }
 
   if (c instanceof FInteger && d instanceof FInteger) {
     return new FInteger(c.value - d.value, {
+      standard: c.standard,
       kind: kind as IntegerKind,
     }) as ArithmeticExpression;
   }
 
   if (c instanceof FLogical && d instanceof FLogical) {
     return new FLogical(Boolean(c.value && !d.value), {
+      standard: c.standard,
       kind: kind as LogicalKind,
     }) as ArithmeticExpression;
   }
 
   if (c instanceof FReal && d instanceof FReal) {
     return new FReal(c.value - d.value, {
+      standard: c.standard,
       kind: kind as RealKind,
     }) as ArithmeticExpression;
   }
@@ -653,6 +698,7 @@ export function mul(
   if (c instanceof FByte && d instanceof FByte) {
     return new FByte(
       numberToByte(Math.trunc(byteToNumber(c.value) * byteToNumber(d.value))),
+      { standard: c.standard },
     ) as ArithmeticExpression;
   }
 
@@ -662,24 +708,27 @@ export function mul(
         r: c.value.r * d.value.r - c.value.i * d.value.i,
         i: c.value.r * d.value.i + c.value.i * d.value.r,
       },
-      { kind: kind as ComplexKind },
+      { standard: c.standard, kind: kind as ComplexKind },
     ) as ArithmeticExpression;
   }
 
   if (c instanceof FInteger && d instanceof FInteger) {
     return new FInteger(c.value * d.value, {
+      standard: c.standard,
       kind: kind as IntegerKind,
     }) as ArithmeticExpression;
   }
 
   if (c instanceof FLogical && d instanceof FLogical) {
     return new FLogical(Boolean(c.value && d.value), {
+      standard: c.standard,
       kind: kind as LogicalKind,
     }) as ArithmeticExpression;
   }
 
   if (c instanceof FReal && d instanceof FReal) {
     return new FReal(c.value * d.value, {
+      standard: c.standard,
       kind: kind as RealKind,
     }) as ArithmeticExpression;
   }
@@ -713,6 +762,7 @@ export function div(
   if (c instanceof FByte && d instanceof FByte) {
     return new FByte(
       numberToByte(Math.trunc(byteToNumber(c.value) / byteToNumber(d.value))),
+      { standard: c.standard },
     ) as ArithmeticExpression;
   }
 
@@ -724,6 +774,7 @@ export function div(
         i: (c.value.i * d.value.r - c.value.r * d.value.i) / m,
       },
       {
+        standard: c.standard,
         kind: kind as ComplexKind,
       },
     ) as ArithmeticExpression;
@@ -731,18 +782,21 @@ export function div(
 
   if (c instanceof FInteger && d instanceof FInteger) {
     return new FInteger(Math.trunc(c.value / d.value), {
+      standard: c.standard,
       kind: kind as IntegerKind,
     }) as ArithmeticExpression;
   }
 
   if (c instanceof FLogical && d instanceof FLogical) {
     return new FLogical(Boolean(c.value && d.value), {
+      standard: c.standard,
       kind: kind as LogicalKind,
     }) as ArithmeticExpression;
   }
 
   if (c instanceof FReal && d instanceof FReal) {
     return new FReal(c.value / d.value, {
+      standard: c.standard,
       kind: kind as RealKind,
     }) as ArithmeticExpression;
   }
@@ -778,6 +832,7 @@ export function pow(
       numberToByte(
         Math.trunc(Math.pow(byteToNumber(c.value), byteToNumber(d.value))),
       ),
+      { standard: c.standard },
     ) as ArithmeticExpression;
   }
 
@@ -796,6 +851,7 @@ export function pow(
         i: p * Math.sin(y),
       },
       {
+        standard: c.standard,
         kind: kind as ComplexKind,
       },
     ) as ArithmeticExpression;
@@ -803,18 +859,21 @@ export function pow(
 
   if (c instanceof FInteger && d instanceof FInteger) {
     return new FInteger(Math.trunc(Math.pow(c.value, d.value)), {
+      standard: c.standard,
       kind: kind as IntegerKind,
     }) as ArithmeticExpression;
   }
 
   if (c instanceof FLogical && d instanceof FLogical) {
     return new FLogical(Boolean(Number(c.value) ** Number(d.value)), {
+      standard: c.standard,
       kind: kind as LogicalKind,
     }) as ArithmeticExpression;
   }
 
   if (c instanceof FReal && d instanceof FReal) {
     return new FReal(Math.pow(c.value, d.value), {
+      standard: c.standard,
       kind: kind as RealKind,
     }) as ArithmeticExpression;
   }
@@ -836,7 +895,7 @@ export function uplus(
   const kind = getKind(a);
 
   if (a instanceof FByte) {
-    return new FByte(byteToNumber(a.value));
+    return new FByte(byteToNumber(a.value), { standard: a.standard });
   }
 
   if (a instanceof FComplex) {
@@ -845,20 +904,29 @@ export function uplus(
         r: +a.value.r,
         i: +a.value.i,
       },
-      { kind: kind as ComplexKind },
+      { standard: a.standard, kind: kind as ComplexKind },
     );
   }
 
   if (a instanceof FInteger) {
-    return new FInteger(+a.value, { kind: kind as IntegerKind });
+    return new FInteger(+a.value, {
+      standard: a.standard,
+      kind: kind as IntegerKind,
+    });
   }
 
   if (a instanceof FLogical) {
-    return new FLogical(a.value, { kind: kind as LogicalKind });
+    return new FLogical(a.value, {
+      standard: a.standard,
+      kind: kind as LogicalKind,
+    });
   }
 
   if (a instanceof FReal) {
-    return new FReal(+a.value, { kind: kind as RealKind });
+    return new FReal(+a.value, {
+      standard: a.standard,
+      kind: kind as RealKind,
+    });
   }
   assert.fail('Unsupported arithmetic expression');
 }
@@ -878,7 +946,7 @@ export function uminus(
   const kind = getKind(a);
 
   if (a instanceof FByte) {
-    return new FByte(-byteToNumber(a.value));
+    return new FByte(-byteToNumber(a.value), { standard: a.standard });
   }
 
   if (a instanceof FComplex) {
@@ -887,20 +955,29 @@ export function uminus(
         r: -a.value.r,
         i: -a.value.i,
       },
-      { kind: kind as ComplexKind },
+      { standard: a.standard, kind: kind as ComplexKind },
     );
   }
 
   if (a instanceof FInteger) {
-    return new FInteger(-a.value, { kind: kind as IntegerKind });
+    return new FInteger(-a.value, {
+      standard: a.standard,
+      kind: kind as IntegerKind,
+    });
   }
 
   if (a instanceof FLogical) {
-    return new FLogical(!a.value, { kind: kind as LogicalKind });
+    return new FLogical(!a.value, {
+      standard: a.standard,
+      kind: kind as LogicalKind,
+    });
   }
 
   if (a instanceof FReal) {
-    return new FReal(-a.value, { kind: kind as RealKind });
+    return new FReal(-a.value, {
+      standard: a.standard,
+      kind: kind as RealKind,
+    });
   }
   assert.fail('Unsupported arithmetic expression');
 }
@@ -916,7 +993,10 @@ export function not(a: FLogical | FLogicalArray): FLogical | FLogicalArray {
     return arrayResult;
   }
   a = a as FLogical;
-  return new FLogical(!a.value, { kind: a.kind });
+  return new FLogical(!a.value, {
+    standard: a.standard,
+    kind: a.kind,
+  });
 }
 
 export function and<A extends FLogical, B extends FLogical>(
@@ -946,7 +1026,10 @@ export function and<A extends FLogical, B extends FLogical>(
   const kind = getKind(c);
 
   if (c instanceof FLogical && d instanceof FLogical) {
-    return new FLogical(c.value && d.value, { kind: kind as LogicalKind });
+    return new FLogical(c.value && d.value, {
+      standard: c.standard,
+      kind: kind as LogicalKind,
+    });
   }
   assert.fail('Unsupported logical operands');
 }
@@ -974,7 +1057,10 @@ export function or(
   const kind = getKind(c);
 
   if (c instanceof FLogical && d instanceof FLogical) {
-    return new FLogical(c.value || d.value, { kind: kind as LogicalKind });
+    return new FLogical(c.value || d.value, {
+      standard: c.standard,
+      kind: kind as LogicalKind,
+    });
   }
   assert.fail('Unsupported logical operands');
 }
@@ -1002,7 +1088,10 @@ export function neqv(
   const kind = getKind(c);
 
   if (c instanceof FLogical && d instanceof FLogical) {
-    return new FLogical(c.value !== d.value, { kind: kind as LogicalKind });
+    return new FLogical(c.value !== d.value, {
+      standard: c.standard,
+      kind: kind as LogicalKind,
+    });
   }
   assert.fail('Unsupported logical operands');
 }
@@ -1030,7 +1119,10 @@ export function xor(
   const kind = getKind(c);
 
   if (c instanceof FLogical && d instanceof FLogical) {
-    return new FLogical(c.value !== d.value, { kind: kind as LogicalKind });
+    return new FLogical(c.value !== d.value, {
+      standard: c.standard,
+      kind: kind as LogicalKind,
+    });
   }
   assert.fail('Unsupported logical operands');
 }
@@ -1058,7 +1150,10 @@ export function eqv(
   const kind = getKind(c);
 
   if (c instanceof FLogical && d instanceof FLogical) {
-    return new FLogical(c.value === d.value, { kind: kind as LogicalKind });
+    return new FLogical(c.value === d.value, {
+      standard: c.standard,
+      kind: kind as LogicalKind,
+    });
   }
   assert.fail('Unsupported logical operands');
 }

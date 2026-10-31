@@ -1618,6 +1618,30 @@ describe('CONCAT', () => {
 });
 
 describe('kind-aware mixed-mode arithmetic', () => {
+  test('preserves the left operand standard in promoted and comparison results', () => {
+    const integer = new FInteger(2, {
+      standard: 'Fortran95' as FortranStandard,
+    });
+    const real = new FReal(1.5, {
+      standard: 'Fortran2008' as FortranStandard,
+      kind: 8,
+    });
+
+    expect(Fortran.ADD(integer, real)).toMatchObject({
+      value: 3.5,
+      kind: 8,
+      standard: 'Fortran95',
+    });
+    expect(Fortran.EQ(integer, real)).toMatchObject({
+      value: false,
+      standard: 'Fortran95',
+    });
+    expect(Fortran.UMINUS(integer)).toMatchObject({
+      value: -2,
+      standard: 'Fortran95',
+    });
+  });
+
   test('resolves equal-rank logical and real operands as real in either order', () => {
     const logical = Fortran.LOGICAL(true, 8);
     const real = Fortran.REAL(2.5, 4);

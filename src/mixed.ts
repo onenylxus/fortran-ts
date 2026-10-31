@@ -145,17 +145,29 @@ function promote(
 ): ArithmeticExpression {
   if (target === FComplex) {
     const value = e instanceof FComplex ? e.value : numberToComplex(toNumber(e));
-    return new FComplex(value, { kind: kind as ComplexKind });
+    return new FComplex(value, {
+      standard: e.standard,
+      kind: kind as ComplexKind,
+    });
   }
   if (target === FInteger) {
-    return new FInteger(toNumber(e), { kind: kind as IntegerKind });
+    return new FInteger(toNumber(e), {
+      standard: e.standard,
+      kind: kind as IntegerKind,
+    });
   }
   if (target === FLogical) {
     const value = Boolean(toNumber(e));
-    return new FLogical(value, { kind: kind as LogicalKind });
+    return new FLogical(value, {
+      standard: e.standard,
+      kind: kind as LogicalKind,
+    });
   }
   if (target === FReal) {
-    return new FReal(toNumber(e), { kind: kind as RealKind });
+    return new FReal(toNumber(e), {
+      standard: e.standard,
+      kind: kind as RealKind,
+    });
   }
   assert.fail('Unsupported promotion target');
 }

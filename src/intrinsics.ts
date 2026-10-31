@@ -51,6 +51,18 @@ function effectiveKind(value: FInteger | FReal): number {
   return value.kind ?? 4;
 }
 
+function assertSpecificKind(
+  value: FInteger | FReal | FComplex,
+  kind: number,
+  name: string,
+): void {
+  const actual =
+    value instanceof FInteger || value instanceof FReal
+      ? effectiveKind(value)
+      : (value.kind ?? 8);
+  assert(actual === kind, `${name} requires kind ${kind}`);
+}
+
 function assertMatchingNumericTypes(
   a: FInteger | FReal,
   b: FInteger | FReal,
@@ -182,6 +194,24 @@ export function abs(value: FInteger | FReal | FComplex): FInteger | FReal {
   assert.fail('ABS requires an integer, real, or complex value');
 }
 
+export function iabs(value: FInteger): FInteger {
+  assertSpecificKind(value, 4, 'IABS');
+  return integerResult(Math.abs(value.value), value);
+}
+
+export function dabs(value: FReal): FReal {
+  assertSpecificKind(value, 8, 'DABS');
+  return realResult(Math.abs(value.value), value);
+}
+
+export function cabs(value: FComplex): FReal {
+  assertSpecificKind(value, 8, 'CABS');
+  return new FReal(Math.hypot(value.value.r, value.value.i), {
+    standard: value.standard,
+    kind: 4,
+  });
+}
+
 export function aint(value: FReal): FReal {
   return realResult(Math.trunc(value.value), value);
 }
@@ -212,6 +242,18 @@ export function sign(
   return realResult(result, value);
 }
 
+export function isign(value: FInteger, signSource: FInteger): FInteger {
+  assertSpecificKind(value, 4, 'ISIGN');
+  assertSpecificKind(signSource, 4, 'ISIGN');
+  return sign(value, signSource);
+}
+
+export function dsign(value: FReal, signSource: FReal): FReal {
+  assertSpecificKind(value, 8, 'DSIGN');
+  assertSpecificKind(signSource, 8, 'DSIGN');
+  return sign(value, signSource);
+}
+
 export function dim(value: FInteger, subtrahend: FInteger): FInteger;
 export function dim(value: FReal, subtrahend: FReal): FReal;
 export function dim(
@@ -224,6 +266,26 @@ export function dim(
     return integerResult(difference, value);
   }
   return realResult(difference, value);
+}
+
+export function idim(value: FInteger, subtrahend: FInteger): FInteger {
+  assertSpecificKind(value, 4, 'IDIM');
+  assertSpecificKind(subtrahend, 4, 'IDIM');
+  return integerResult(Math.max(value.value - subtrahend.value, 0), value);
+}
+
+export function adim(value: FReal, subtrahend: FReal): FReal {
+  assertSpecificKind(value, 4, 'ADIM');
+  assertSpecificKind(subtrahend, 4, 'ADIM');
+  assertMatchingNumericTypes(value, subtrahend, 'ADIM');
+  return realResult(Math.max(value.value - subtrahend.value, 0), value);
+}
+
+export function ddim(value: FReal, subtrahend: FReal): FReal {
+  assertSpecificKind(value, 8, 'DDIM');
+  assertSpecificKind(subtrahend, 8, 'DDIM');
+  assertMatchingNumericTypes(value, subtrahend, 'DDIM');
+  return realResult(Math.max(value.value - subtrahend.value, 0), value);
 }
 
 export function mod(value: FInteger, divisor: FInteger): FInteger;
@@ -242,6 +304,18 @@ export function mod(
     return integerResult(remainder, value);
   }
   return realResult(remainder, value);
+}
+
+export function amod(value: FReal, divisor: FReal): FReal {
+  assertSpecificKind(value, 4, 'AMOD');
+  assertSpecificKind(divisor, 4, 'AMOD');
+  return mod(value, divisor);
+}
+
+export function dmod(value: FReal, divisor: FReal): FReal {
+  assertSpecificKind(value, 8, 'DMOD');
+  assertSpecificKind(divisor, 8, 'DMOD');
+  return mod(value, divisor);
 }
 
 export function max(value: FInteger, ...others: FInteger[]): FInteger;
@@ -300,11 +374,41 @@ export function log(value: FReal): FReal {
   return realUnary(value, Math.log);
 }
 
+export function alog(value: FReal): FReal {
+  assertSpecificKind(value, 4, 'ALOG');
+  return realUnary(value, Math.log);
+}
+
+export function dlog(value: FReal): FReal {
+  assertSpecificKind(value, 8, 'DLOG');
+  return realUnary(value, Math.log);
+}
+
 export function log10(value: FReal): FReal {
   return realUnary(value, Math.log10);
 }
 
+export function alog10(value: FReal): FReal {
+  assertSpecificKind(value, 4, 'ALOG10');
+  return realUnary(value, Math.log10);
+}
+
+export function dlog10(value: FReal): FReal {
+  assertSpecificKind(value, 8, 'DLOG10');
+  return realUnary(value, Math.log10);
+}
+
+export function dexp(value: FReal): FReal {
+  assertSpecificKind(value, 8, 'DEXP');
+  return realUnary(value, Math.exp);
+}
+
 export function sin(value: FReal): FReal {
+  return realUnary(value, Math.sin);
+}
+
+export function dsin(value: FReal): FReal {
+  assertSpecificKind(value, 8, 'DSIN');
   return realUnary(value, Math.sin);
 }
 
@@ -312,7 +416,17 @@ export function cos(value: FReal): FReal {
   return realUnary(value, Math.cos);
 }
 
+export function dcos(value: FReal): FReal {
+  assertSpecificKind(value, 8, 'DCOS');
+  return realUnary(value, Math.cos);
+}
+
 export function tan(value: FReal): FReal {
+  return realUnary(value, Math.tan);
+}
+
+export function dtan(value: FReal): FReal {
+  assertSpecificKind(value, 8, 'DTAN');
   return realUnary(value, Math.tan);
 }
 
@@ -320,11 +434,26 @@ export function asin(value: FReal): FReal {
   return realUnary(value, Math.asin);
 }
 
+export function dasin(value: FReal): FReal {
+  assertSpecificKind(value, 8, 'DASIN');
+  return realUnary(value, Math.asin);
+}
+
 export function acos(value: FReal): FReal {
   return realUnary(value, Math.acos);
 }
 
+export function dacos(value: FReal): FReal {
+  assertSpecificKind(value, 8, 'DACOS');
+  return realUnary(value, Math.acos);
+}
+
 export function atan(value: FReal): FReal {
+  return realUnary(value, Math.atan);
+}
+
+export function datan(value: FReal): FReal {
+  assertSpecificKind(value, 8, 'DATAN');
   return realUnary(value, Math.atan);
 }
 
@@ -333,6 +462,13 @@ export function atan2(y: FReal, x: FReal): FReal {
     effectiveKind(y) === effectiveKind(x),
     'ATAN2 operands must have the same kind',
   );
+  return realResult(Math.atan2(y.value, x.value), y);
+}
+
+export function datan2(y: FReal, x: FReal): FReal {
+  assertSpecificKind(y, 8, 'DATAN2');
+  assertSpecificKind(x, 8, 'DATAN2');
+  assertMatchingNumericTypes(y, x, 'DATAN2');
   return realResult(Math.atan2(y.value, x.value), y);
 }
 
@@ -346,6 +482,11 @@ export function cosh(value: FReal): FReal {
 
 export function tanh(value: FReal): FReal {
   return realUnary(value, Math.tanh);
+}
+
+export function dsqrt(value: FReal): FReal {
+  assertSpecificKind(value, 8, 'DSQRT');
+  return realUnary(value, Math.sqrt);
 }
 
 export function aimag(value: FComplex): FReal {
