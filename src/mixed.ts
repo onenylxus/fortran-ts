@@ -218,52 +218,41 @@ export function mix<
       d = promote(b, FReal, resultKind) as Mix<A, B>;
     }
   } else {
-    if (a instanceof FInteger && b instanceof FInteger) {
-      assertIntegerKind(resultKind);
-      c = promote(a, FInteger, resultKind) as Mix<A, B>;
-      d = promote(b, FInteger, resultKind) as Mix<A, B>;
-    } else if (
-      (a instanceof FByte && b instanceof FLogical) ||
-      (a instanceof FLogical && b instanceof FByte)
-    ) {
-      assertLogicalKind(resultKind);
-      c = promote(a, FLogical, resultKind) as Mix<A, B>;
-      d = promote(b, FLogical, resultKind) as Mix<A, B>;
-    } else if (a instanceof FInteger && b instanceof FLogical) {
-      assertIntegerKind(resultKind);
-      c = promote(a, FInteger, resultKind) as Mix<A, B>;
-      d = promote(b, FInteger, resultKind) as Mix<A, B>;
-    } else if (a instanceof FInteger && b instanceof FReal) {
-      assertRealKind(resultKind);
-      c = promote(a, FReal, resultKind) as Mix<A, B>;
-      d = promote(b, FReal, resultKind) as Mix<A, B>;
-    } else if (a instanceof FLogical && b instanceof FInteger) {
-      assertIntegerKind(resultKind);
-      c = promote(a, FInteger, resultKind) as Mix<A, B>;
-      d = promote(b, FInteger, resultKind) as Mix<A, B>;
-    } else if (a instanceof FLogical && b instanceof FLogical) {
-      assertLogicalKind(resultKind);
-      c = promote(a, FLogical, resultKind) as Mix<A, B>;
-      d = promote(b, FLogical, resultKind) as Mix<A, B>;
-    } else if (a instanceof FLogical && b instanceof FReal) {
-      assertRealKind(resultKind);
-      c = promote(a, FReal, resultKind) as Mix<A, B>;
-      d = promote(b, FReal, resultKind) as Mix<A, B>;
-    } else if (a instanceof FReal && b instanceof FInteger) {
-      assertRealKind(resultKind);
-      c = promote(a, FReal, resultKind) as Mix<A, B>;
-      d = promote(b, FReal, resultKind) as Mix<A, B>;
-    } else if (a instanceof FReal && b instanceof FLogical) {
-      assertRealKind(resultKind);
-      c = promote(a, FReal, resultKind) as Mix<A, B>;
-      d = promote(b, FReal, resultKind) as Mix<A, B>;
-    } else if (a instanceof FReal && b instanceof FReal) {
-      assertRealKind(resultKind);
-      c = promote(a, FReal, resultKind) as Mix<A, B>;
-      d = promote(b, FReal, resultKind) as Mix<A, B>;
-    } else {
+    if (a instanceof FByte && b instanceof FByte) {
       c = a as unknown as Mix<A, B>;
       d = b as unknown as Mix<A, B>;
+    } else {
+      let target: PromotionTarget;
+      let kind: number;
+      if (a instanceof FComplex || b instanceof FComplex) {
+        target = FComplex;
+        kind = Math.max(
+          a instanceof FComplex ? getKind(a) : 0,
+          b instanceof FComplex ? getKind(b) : 0,
+        );
+        assertComplexKind(kind);
+      } else if (a instanceof FReal || b instanceof FReal) {
+        target = FReal;
+        kind = Math.max(
+          a instanceof FReal ? getKind(a) : 0,
+          b instanceof FReal ? getKind(b) : 0,
+        );
+        assertRealKind(kind);
+      } else if (a instanceof FInteger || b instanceof FInteger) {
+        target = FInteger;
+        kind = Math.max(
+          a instanceof FInteger ? getKind(a) : 0,
+          b instanceof FInteger ? getKind(b) : 0,
+        );
+        assertIntegerKind(kind);
+      } else {
+        target = FLogical;
+        kind = Math.max(getKind(a), getKind(b));
+        assertLogicalKind(kind);
+      }
+
+      c = promote(a, target, kind) as Mix<A, B>;
+      d = promote(b, target, kind) as Mix<A, B>;
     }
   }
 

@@ -1508,6 +1508,34 @@ describe('CONCAT', () => {
 });
 
 describe('kind-aware mixed-mode arithmetic', () => {
+  test('resolves equal-rank logical and real operands as real in either order', () => {
+    const logical = Fortran.LOGICAL(true, 8);
+    const real = Fortran.REAL(2.5, 4);
+
+    expect(Fortran.ADD(logical, real)).toMatchObject({
+      value: 3.5,
+      kind: 4,
+    });
+    expect(Fortran.ADD(real, logical)).toMatchObject({
+      value: 3.5,
+      kind: 4,
+    });
+  });
+
+  test('resolves equal-rank logical and integer operands as integer', () => {
+    const logical = Fortran.LOGICAL(true, 4);
+    const integer = Fortran.INTEGER(2, 2);
+
+    expect(Fortran.ADD(logical, integer)).toMatchObject({
+      value: 3,
+      kind: 2,
+    });
+    expect(Fortran.ADD(integer, logical)).toMatchObject({
+      value: 3,
+      kind: 2,
+    });
+  });
+
   test('uses the real operand kind for mixed integer and real arithmetic', () => {
     const integer = Fortran.INTEGER(2, 8);
     const real = Fortran.REAL(2.5, 4);
