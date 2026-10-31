@@ -81,6 +81,7 @@ export function getKind(e: ArithmeticExpression): number {
   if (e instanceof FReal) {
     return e.kind ?? 4;
   }
+  assert.fail('Unsupported arithmetic expression');
 }
 
 function getRank(e: ArithmeticExpression): number {
@@ -100,52 +101,76 @@ function getRank(e: ArithmeticExpression): number {
   if (e instanceof FReal) {
     return 6 + Math.log2(k / 4);
   }
+  assert.fail('Unsupported arithmetic expression');
 }
 
-function promote<T extends ArithmeticExpression>(
-  e: ArithmeticExpression,
-  type: new (value?: unknown, options?: unknown) => T,
-  kind: number,
-): T {
-  const instance = new type();
+function getEqualRankKind(
+  a: ArithmeticExpression,
+  b: ArithmeticExpression,
+): number {
+  const operands = [a, b];
+  const typeOrder = [FComplex, FReal, FInteger, FLogical, FByte];
+  for (const type of typeOrder) {
+    const operand = operands.find((value) => value instanceof type);
+    if (operand !== undefined) {
+      return getKind(operand);
+    }
+  }
+  assert.fail('Unsupported arithmetic expression');
+}
 
+type PromotionTarget =
+  | typeof FComplex
+  | typeof FInteger
+  | typeof FLogical
+  | typeof FReal;
+
+function toNumber(e: ArithmeticExpression): number {
   if (e instanceof FByte) {
-    if (instance instanceof FComplex) {
-      return new type(numberToComplex(byteToNumber(e.value)), { kind });
-    }
-    if (!(instance instanceof FLogical)) {
-      return new type(byteToNumber(e.value), { kind });
-    }
-    return new type(Boolean(e.value), { kind });
+    return byteToNumber(e.value);
   }
-
-  if (e instanceof FComplex) {
-    return new type(e.value, { kind });
+  if (e instanceof FInteger || e instanceof FReal) {
+    return e.value;
   }
-
-  if (e instanceof FInteger) {
-    if (instance instanceof FComplex) {
-      return new type(numberToComplex(e.value), { kind });
-    }
-    return new type(e.value, { kind });
-  }
-
   if (e instanceof FLogical) {
-    if (instance instanceof FComplex) {
-      return new type({ r: e.value ? 1 : 0, i: 0 }, { kind });
-    }
-    if (!(instance instanceof FLogical)) {
-      return new type(e.value ? 1 : 0, { kind });
-    }
-    return new type(e.value, { kind });
+    return e.value ? 1 : 0;
   }
+  assert.fail('Cannot convert a complex value to a real number');
+}
 
-  if (e instanceof FReal) {
-    if (instance instanceof FComplex) {
-      return new type(numberToComplex(e.value), { kind });
-    }
-    return new type(e.value, { kind });
+function promote(
+  e: ArithmeticExpression,
+  target: PromotionTarget,
+  kind: number,
+): ArithmeticExpression {
+  if (target === FComplex) {
+    const value =
+      e instanceof FComplex ? e.value : numberToComplex(toNumber(e));
+    return new FComplex(value, {
+      standard: e.standard,
+      kind: kind as ComplexKind,
+    });
   }
+  if (target === FInteger) {
+    return new FInteger(toNumber(e), {
+      standard: e.standard,
+      kind: kind as IntegerKind,
+    });
+  }
+  if (target === FLogical) {
+    const value = Boolean(toNumber(e));
+    return new FLogical(value, {
+      standard: e.standard,
+      kind: kind as LogicalKind,
+    });
+  }
+  if (target === FReal) {
+    return new FReal(toNumber(e), {
+      standard: e.standard,
+      kind: kind as RealKind,
+    });
+  }
+  assert.fail('Unsupported promotion target');
 }
 
 export function mix<
@@ -155,10 +180,11 @@ export function mix<
   const rankA = getRank(a);
   const rankB = getRank(b);
   const resultRank = Math.max(rankA, rankB);
-  const resultKind = Math.max(getKind(a), getKind(b));
+  const resultKind =
+    rankA === rankB ? getEqualRankKind(a, b) : getKind(rankA > rankB ? a : b);
 
-  let c: Mix<A, B>;
-  let d: Mix<A, B>;
+  let c: Mix<A, B> | undefined;
+  let d: Mix<A, B> | undefined;
 
   if (rankA > rankB) {
     if (a instanceof FComplex) {
@@ -203,45 +229,41 @@ export function mix<
       d = promote(b, FReal, resultKind) as Mix<A, B>;
     }
   } else {
-    if (a instanceof FInteger && b instanceof FInteger) {
-      assertIntegerKind(resultKind);
-      c = promote(a, FInteger, resultKind) as Mix<A, B>;
-      d = promote(b, FInteger, resultKind) as Mix<A, B>;
-    } else if (a instanceof FInteger && b instanceof FLogical) {
-      assertIntegerKind(resultKind);
-      c = promote(a, FInteger, resultKind) as Mix<A, B>;
-      d = promote(b, FInteger, resultKind) as Mix<A, B>;
-    } else if (a instanceof FInteger && b instanceof FReal) {
-      assertRealKind(resultKind);
-      c = promote(a, FReal, resultKind) as Mix<A, B>;
-      d = promote(b, FReal, resultKind) as Mix<A, B>;
-    } else if (a instanceof FLogical && b instanceof FInteger) {
-      assertIntegerKind(resultKind);
-      c = promote(a, FInteger, resultKind) as Mix<A, B>;
-      d = promote(b, FInteger, resultKind) as Mix<A, B>;
-    } else if (a instanceof FLogical && b instanceof FLogical) {
-      assertLogicalKind(resultKind);
-      c = promote(a, FLogical, resultKind) as Mix<A, B>;
-      d = promote(b, FLogical, resultKind) as Mix<A, B>;
-    } else if (a instanceof FLogical && b instanceof FReal) {
-      assertRealKind(resultKind);
-      c = promote(a, FReal, resultKind) as Mix<A, B>;
-      d = promote(b, FReal, resultKind) as Mix<A, B>;
-    } else if (a instanceof FReal && b instanceof FInteger) {
-      assertRealKind(resultKind);
-      c = promote(a, FReal, resultKind) as Mix<A, B>;
-      d = promote(b, FReal, resultKind) as Mix<A, B>;
-    } else if (a instanceof FReal && b instanceof FLogical) {
-      assertRealKind(resultKind);
-      c = promote(a, FReal, resultKind) as Mix<A, B>;
-      d = promote(b, FReal, resultKind) as Mix<A, B>;
-    } else if (a instanceof FReal && b instanceof FReal) {
-      assertRealKind(resultKind);
-      c = promote(a, FReal, resultKind) as Mix<A, B>;
-      d = promote(b, FReal, resultKind) as Mix<A, B>;
-    } else {
+    if (a instanceof FByte && b instanceof FByte) {
       c = a as unknown as Mix<A, B>;
       d = b as unknown as Mix<A, B>;
+    } else {
+      let target: PromotionTarget;
+      let kind: number;
+      if (a instanceof FComplex || b instanceof FComplex) {
+        target = FComplex;
+        kind = Math.max(
+          a instanceof FComplex ? getKind(a) : 0,
+          b instanceof FComplex ? getKind(b) : 0,
+        );
+        assertComplexKind(kind);
+      } else if (a instanceof FReal || b instanceof FReal) {
+        target = FReal;
+        kind = Math.max(
+          a instanceof FReal ? getKind(a) : 0,
+          b instanceof FReal ? getKind(b) : 0,
+        );
+        assertRealKind(kind);
+      } else if (a instanceof FInteger || b instanceof FInteger) {
+        target = FInteger;
+        kind = Math.max(
+          a instanceof FInteger ? getKind(a) : 0,
+          b instanceof FInteger ? getKind(b) : 0,
+        );
+        assertIntegerKind(kind);
+      } else {
+        target = FLogical;
+        kind = Math.max(getKind(a), getKind(b));
+        assertLogicalKind(kind);
+      }
+
+      c = promote(a, target, kind) as Mix<A, B>;
+      d = promote(b, target, kind) as Mix<A, B>;
     }
   }
 

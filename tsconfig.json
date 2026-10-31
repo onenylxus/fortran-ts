@@ -1,14 +1,17 @@
 {
   "compilerOptions": {
-    "target": "esnext",
-    "module": "esnext",
-    "moduleResolution": "node",
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "noEmitOnError": true,
-    "lib": [],
+    "strict": true,
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "outDir": "out-tsc",
-    "rootDir": "./"
+    "rootDir": "./",
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "types": ["node"]
   },
   "include": ["src/**/*.ts", "global.d.ts"]
 }

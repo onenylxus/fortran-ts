@@ -34,7 +34,7 @@ export type ArithmeticExpression =
   | FReal;
 
 abstract class FIntrinsic<T> implements FDataOptions {
-  protected _value: T;
+  declare protected _value: T;
 
   public constructor(
     protected _standard: FortranStandard,
@@ -42,29 +42,58 @@ abstract class FIntrinsic<T> implements FDataOptions {
     protected _description: string,
   ) {}
 
+  /** Fortran standard associated with this value. */
   public get standard(): FortranStandard {
     return this._standard;
   }
 
+  /** Fortran datatype name represented by this value. */
   public get name(): string {
     return this._name;
   }
 
+  /** Human-readable description of this datatype. */
   public get description(): string {
     return this._description;
   }
 
   public abstract set value(v: T);
+  /** Stored Fortran value. Assignments are validated by the concrete datatype. */
   public abstract get value(): T;
 }
 
 type FArrayOptions = {
   dim: Dimension;
+  bounds?: Array<[number, number]>;
 } & FDataOptions;
 
-abstract class FArray<P, T = FIntrinsic<P>> implements FDataOptions {
-  protected _value: FortranArray<T>;
-  private _dim: Dimension;
+export type ArraySection = {
+  lower?: number;
+  upper?: number;
+  stride?: number;
+};
+
+export type ArraySelector = number | ArraySection;
+
+type FortranArrayValue<T> = (T | undefined | FortranArrayValue<T>)[];
+
+function getArrayDimensions(bounds: Array<[number, number]>): Dimension {
+  return bounds.map(([lower, upper]) => upper - lower + 1) as Dimension;
+}
+
+function assertCharacterLength(length: number | undefined): void {
+  assert(
+    length === undefined || (Number.isInteger(length) && length > 0),
+    'CHARACTER length must be a positive integer',
+  );
+}
+
+abstract class FArray<P, T extends { value: P } = FIntrinsic<P>>
+  implements FDataOptions
+{
+  declare protected _value: FortranArray<T>;
+  declare private _dim: Dimension;
+  declare private _bounds: Array<[number, number]>;
 
   public constructor(
     protected _standard: FortranStandard,
@@ -72,36 +101,49 @@ abstract class FArray<P, T = FIntrinsic<P>> implements FDataOptions {
     protected _description: string,
   ) {}
 
+  /** Fortran standard associated with this array. */
   public get standard(): FortranStandard {
     return this._standard;
   }
 
+  /** Fortran datatype name represented by this array. */
   public get name(): string {
     return this._name;
   }
 
+  /** Human-readable description of this array's datatype. */
   public get description(): string {
     return this._description;
   }
 
   protected abstract build(v: P): T;
 
-  protected fromValue(a: FortranArray<P>, d: number): FortranArray<T> {
-    assert(Array.isArray(a));
-    assert(a.length === this.dim[d]);
+  protected abstract createArray(
+    value: FortranArray<P>,
+    bounds: Array<[number, number]>,
+  ): FArray<P, T>;
 
-    if (d === 0) {
-      return a.map((v) => this.build(v));
+  protected fromValue(a: FortranArray<P>, d: number): FortranArray<T> {
+    assert(Array.isArray(a), 'Fortran array values must be arrays');
+    assert(
+      a.length === this.dim[d],
+      'Fortran array extents must match declared dimensions',
+    );
+
+    if (d === this.dim.length - 1) {
+      return (a as P[]).map((v) => this.build(v));
     }
-    return a.map((v) => this.fromValue(v, d - 1)) as FortranArray<T>;
+    return (a as FortranArray<P>).map((v) =>
+      this.fromValue(v as FortranArray<P>, d + 1),
+    ) as FortranArray<T>;
   }
 
-  protected toValue(a: FortranArray<T>): FortranArray<P> {
+  protected toValue(a: FortranArray<T>): FortranArrayValue<P> {
     return [
       undefined,
       ...a.map((v) => {
         if (Array.isArray(v)) {
-          return this.toValue(v);
+          return this.toValue(v as FortranArray<T>);
         }
         return v.value;
       }),
@@ -109,25 +151,314 @@ abstract class FArray<P, T = FIntrinsic<P>> implements FDataOptions {
   }
 
   public set value(v: FortranArray<P>) {
-    this._value = this.fromValue(v, this.dim.length - 1);
+    this._value = this.fromValue(v, 0);
   }
 
-  public get value(): FortranArray<P> {
+  /**
+   * Array values in nested form, with a leading `undefined` at each dimension
+   * so the returned structure can be indexed using Fortran's one-based subscripts.
+   */
+  public get value(): FortranArrayValue<P> {
     return this.toValue(this._value);
   }
 
   protected set dim(d: Dimension) {
-    assert(Array.isArray(d));
-    assert(d.length >= 1 && d.length <= 7);
-    assert(d.every((l) => Number.isInteger(l) && l > 0));
+    assert(Array.isArray(d), 'Fortran array dimensions must be an array');
+    assert(
+      d.length >= 1 && d.length <= 7,
+      'Fortran array rank must be between 1 and 7',
+    );
+    assert(
+      d.every((l) => Number.isInteger(l) && l > 0),
+      'Fortran array extents must be positive integers',
+    );
     this._dim = d;
   }
 
+  protected set bounds(bounds: Array<[number, number]> | undefined) {
+    const resolvedBounds =
+      bounds ?? this.dim.map((extent) => [1, extent] as [number, number]);
+    assert(
+      Array.isArray(resolvedBounds) &&
+        resolvedBounds.length === this.rank &&
+        resolvedBounds.every(
+          (bound, index) =>
+            Array.isArray(bound) &&
+            bound.length === 2 &&
+            Number.isSafeInteger(bound[0]) &&
+            Number.isSafeInteger(bound[1]) &&
+            bound[1] >= bound[0] &&
+            bound[1] - bound[0] + 1 === this.dim[index],
+        ),
+      'Fortran array bounds must be integer pairs matching declared extents',
+    );
+    this._bounds = resolvedBounds.map(([lower, upper]) => [lower, upper]);
+  }
+
+  /** Number of elements in each array dimension. */
   public get dim(): Dimension {
     if (typeof this._dim === 'number') {
       return [this._dim];
     }
     return this._dim;
+  }
+
+  /** Number of dimensions in the array. */
+  public get rank(): number {
+    return this.dim.length;
+  }
+
+  /** Inclusive lower and upper subscript bounds for each dimension. */
+  public get bounds(): Array<[number, number]> {
+    return this._bounds.map(([lower, upper]) => [lower, upper]);
+  }
+
+  /** Inclusive lower subscript bound for each dimension. */
+  public get lowerBounds(): number[] {
+    return this._bounds.map(([lower]) => lower);
+  }
+
+  /** Inclusive upper subscript bound for each dimension. */
+  public get upperBounds(): number[] {
+    return this._bounds.map(([, upper]) => upper);
+  }
+
+  private getArrayIndices(subscripts: number[]): number[] {
+    assert(
+      subscripts.length === this.rank,
+      `Fortran array subscripts must provide exactly ${this.rank} indices`,
+    );
+    return subscripts.map((subscript, index) => {
+      const [lower, upper] = this._bounds[index];
+      assert(
+        Number.isSafeInteger(subscript) &&
+          subscript >= lower &&
+          subscript <= upper,
+        `Fortran array subscript ${subscript} is outside bounds ${lower}:${upper} in dimension ${index + 1}`,
+      );
+      return subscript - lower;
+    });
+  }
+
+  private resolveSelectors(selectors: ArraySelector[]): {
+    indices: number[][];
+    sectionBounds: Array<[number, number]>;
+  } {
+    assert(
+      selectors.length === this.rank,
+      `Fortran array sections must provide exactly ${this.rank} selectors`,
+    );
+
+    const indices: number[][] = [];
+    const sectionBounds: Array<[number, number]> = [];
+    selectors.forEach((selector, dimension) => {
+      if (typeof selector === 'number') {
+        this.getArrayIndices(
+          selectors.map((_, index) =>
+            index === dimension ? selector : this._bounds[index][0],
+          ),
+        );
+        indices.push([selector]);
+        return;
+      }
+
+      assert(
+        typeof selector === 'object' &&
+          selector !== null &&
+          !Array.isArray(selector),
+        'Fortran array selectors must be indices or section bounds',
+      );
+      const [arrayLower, arrayUpper] = this._bounds[dimension];
+      const stride = selector.stride ?? 1;
+      assert(
+        Number.isSafeInteger(stride) && stride !== 0,
+        'Fortran array section stride must be a non-zero integer',
+      );
+      const lower = selector.lower ?? (stride > 0 ? arrayLower : arrayUpper);
+      const upper = selector.upper ?? (stride > 0 ? arrayUpper : arrayLower);
+      assert(
+        Number.isSafeInteger(lower) &&
+          Number.isSafeInteger(upper) &&
+          lower >= arrayLower &&
+          lower <= arrayUpper &&
+          upper >= arrayLower &&
+          upper <= arrayUpper,
+        `Fortran array section bounds must be within ${arrayLower}:${arrayUpper} in dimension ${dimension + 1}`,
+      );
+      assert(
+        (stride > 0 && lower <= upper) || (stride < 0 && lower >= upper),
+        'Fortran array section bounds must follow the stride direction',
+      );
+
+      const selected: number[] = [];
+      for (
+        let subscript = lower;
+        stride > 0 ? subscript <= upper : subscript >= upper;
+        subscript += stride
+      ) {
+        selected.push(subscript);
+      }
+      assert(selected.length > 0, 'Fortran array sections cannot be empty');
+      indices.push(selected);
+      sectionBounds.push([1, selected.length]);
+    });
+
+    return { indices, sectionBounds };
+  }
+
+  private collectSectionValues(
+    indices: number[][],
+    selectors: ArraySelector[],
+    dimension: number,
+    subscripts: number[],
+  ): FortranArray<P> | P {
+    if (dimension === this.rank) {
+      return this.getElement(...subscripts).value;
+    }
+
+    const selected = indices[dimension];
+    if (typeof selectors[dimension] === 'number') {
+      subscripts[dimension] = selected[0];
+      return this.collectSectionValues(
+        indices,
+        selectors,
+        dimension + 1,
+        subscripts,
+      );
+    }
+
+    return selected.map((subscript) => {
+      subscripts[dimension] = subscript;
+      return this.collectSectionValues(
+        indices,
+        selectors,
+        dimension + 1,
+        subscripts,
+      );
+    }) as FortranArray<P>;
+  }
+
+  /**
+   * Selects an array element or section using Fortran subscripts.
+   * Scalar subscripts remove a dimension; section bounds are inclusive.
+   * @param selectors One selector for each array dimension.
+   * @returns The selected array section or scalar element.
+   */
+  public getSection(...selectors: ArraySelector[]): FArray<P, T> | T {
+    const { indices, sectionBounds } = this.resolveSelectors(selectors);
+    const values = this.collectSectionValues(
+      indices,
+      selectors,
+      0,
+      Array<number>(this.rank),
+    );
+    if (sectionBounds.length === 0) {
+      return this.build(values as P);
+    }
+
+    return this.createArray(values as FortranArray<P>, sectionBounds);
+  }
+
+  /**
+   * Assigns values to an array section.
+   * @param value Rectangular values matching the selected section's shape.
+   * @param selectors One selector for each array dimension; at least one must be a section.
+   * @returns No value.
+   */
+  public setSection(
+    value: FortranArray<P>,
+    ...selectors: ArraySelector[]
+  ): void {
+    const { indices, sectionBounds } = this.resolveSelectors(selectors);
+    assert(
+      sectionBounds.length > 0,
+      'Use setElement to assign a scalar array element',
+    );
+    const source = this.createArray(value, sectionBounds);
+
+    const targetSubscripts = Array<number>(this.rank);
+    const sourceSubscripts = Array<number>(sectionBounds.length);
+    const assign = (dimension: number, sectionDimension: number): void => {
+      if (dimension === this.rank) {
+        this.setElement(
+          source.getElement(...sourceSubscripts).value,
+          ...targetSubscripts,
+        );
+        return;
+      }
+
+      const selected = indices[dimension];
+      for (let offset = 0; offset < selected.length; offset++) {
+        targetSubscripts[dimension] = selected[offset];
+        if (typeof selectors[dimension] === 'number') {
+          assign(dimension + 1, sectionDimension);
+        } else {
+          sourceSubscripts[sectionDimension] =
+            source.lowerBounds[sectionDimension] + offset;
+          assign(dimension + 1, sectionDimension + 1);
+        }
+      }
+    };
+
+    assign(0, 0);
+  }
+
+  /**
+   * Gets an array element by its one-based or explicitly declared Fortran subscripts.
+   * @param subscripts One in-bounds subscript for each dimension.
+   * @returns The result of the operation.
+   */
+  public getElement(...subscripts: number[]): T {
+    const indices = this.getArrayIndices(subscripts);
+    let element: T | FortranArray<T> = this._value;
+    for (const index of indices) {
+      assert(Array.isArray(element), 'Invalid Fortran array shape');
+      element = element[index] as T | FortranArray<T>;
+    }
+    assert(!Array.isArray(element), 'Invalid Fortran array shape');
+    return element;
+  }
+
+  /**
+   * Assigns a value to an array element.
+   * @param value The value to assign.
+   * @param subscripts One in-bounds subscript for each dimension.
+   * @returns No value.
+   */
+  public setElement(value: P, ...subscripts: number[]): void {
+    const indices = this.getArrayIndices(subscripts);
+    let elements: unknown[] = this._value;
+    for (const index of indices.slice(0, -1)) {
+      const next = elements[index];
+      assert(Array.isArray(next), 'Invalid Fortran array shape');
+      elements = next;
+    }
+    elements[indices[indices.length - 1]] = this.build(value);
+  }
+
+  /**
+   * Returns all array values flattened in Fortran column-major order.
+   * @returns The values flattened in column-major order.
+   */
+  public toColumnMajorArray(): P[] {
+    const values: P[] = [];
+    const subscripts = Array<number>(this.rank);
+
+    const visitDimension = (dimension: number): void => {
+      if (dimension < 0) {
+        values.push(this.getElement(...subscripts).value);
+        return;
+      }
+
+      const [lower, upper] = this._bounds[dimension];
+      for (let subscript = lower; subscript <= upper; subscript++) {
+        subscripts[dimension] = subscript;
+        visitDimension(dimension - 1);
+      }
+    };
+
+    visitDimension(this.rank - 1);
+    return values;
   }
 }
 
@@ -147,21 +478,28 @@ export class FByte extends FIntrinsic<Byte> {
   public set value(v: Byte) {
     switch (typeof v) {
       case 'string':
-        assert(isAscii(v));
+        assert(isAscii(v), 'BYTE string values must be one 8-bit character');
         this._value = v;
         break;
       case 'number':
-        assert(isRangedInteger(v, 8, true));
+        assert(
+          isRangedInteger(v, 8, true),
+          'BYTE numeric values must be signed 8-bit integers',
+        );
         this._value = v;
         break;
       case 'boolean':
         this._value = v;
         break;
       default:
-        assert.fail();
+        assert.fail('BYTE values must be strings, numbers, or booleans');
     }
   }
 
+  /**
+   * Byte represented as a one-character string; numeric and boolean inputs are
+   * converted to their corresponding 8-bit character.
+   */
   public get value(): Byte {
     switch (typeof this._value) {
       case 'string':
@@ -175,6 +513,7 @@ export class FByte extends FIntrinsic<Byte> {
     }
   }
 
+  /** Default standard and descriptive metadata used to construct byte values. */
   public static get DefaultOptions(): FByteOptions {
     return {
       standard: FortranStandard.f77,
@@ -198,6 +537,7 @@ export class FByteArray extends FArray<Byte> {
     );
 
     this.dim = options.dim ?? FByteArray.DefaultOptions.dim;
+    this.bounds = options.bounds;
     this.value = value;
   }
 
@@ -205,6 +545,18 @@ export class FByteArray extends FArray<Byte> {
     return new FByte(v, { ...FByte.DefaultOptions, standard: this._standard });
   }
 
+  protected createArray(
+    value: FortranArray<Byte>,
+    bounds: Array<[number, number]>,
+  ): FByteArray {
+    return new FByteArray(value, {
+      standard: this._standard,
+      dim: getArrayDimensions(bounds),
+      bounds,
+    });
+  }
+
+  /** Default metadata and one-dimensional shape used to construct byte arrays. */
   public static get DefaultOptions(): FByteArrayOptions {
     return {
       standard: FortranStandard.f77,
@@ -236,31 +588,97 @@ export class FCharacter extends FIntrinsic<string> {
     this.value = value;
   }
 
+  /** Character datatype name, including its declared length when specified. */
   public override get name(): string {
     return this.len ? `${super.name}*${this.len}` : super.name;
   }
 
   public set value(v: string) {
-    assert(v.split('').every((c) => isAscii(c)));
-    this._value = v.substring(0, this.len);
+    assert(
+      typeof v === 'string' && v.split('').every((c) => isAscii(c)),
+      'CHARACTER values must contain only 8-bit characters',
+    );
+    this._value =
+      this.len === undefined
+        ? v
+        : v.substring(0, this.len).padEnd(this.len, ' ');
   }
 
+  /** Character data after ASCII validation and any declared-length padding or truncation. */
   public get value(): string {
     return this._value;
   }
 
+  private getSubstringRange(start?: number, end?: number): [number, number] {
+    const length = this.len ?? this.value.length;
+    const substringStart = start ?? 1;
+    const substringEnd = end ?? length;
+
+    assert(
+      Number.isInteger(substringStart),
+      'Substring start must be an integer',
+    );
+    assert(Number.isInteger(substringEnd), 'Substring end must be an integer');
+    assert(
+      substringStart >= 1 &&
+        substringStart <= substringEnd &&
+        substringEnd <= length,
+      'Substring bounds must satisfy 1 <= start <= end <= character length',
+    );
+
+    return [substringStart, substringEnd];
+  }
+
+  /**
+   * Extracts a substring using one-based inclusive bounds.
+   * @param start First character position; defaults to one.
+   * @param end Last character position; defaults to the character length.
+   * @returns Character result.
+   */
+  public substring(start?: number, end?: number): FCharacter {
+    const [substringStart, substringEnd] = this.getSubstringRange(start, end);
+
+    return new FCharacter(this.value.slice(substringStart - 1, substringEnd), {
+      standard: this.standard,
+      len: substringEnd - substringStart + 1,
+    });
+  }
+
+  /**
+   * Assigns a substring, truncating or blank-padding to the selected length.
+   * @param value Character data to assign.
+   * @param start First character position; defaults to one.
+   * @param end Last character position; defaults to the character length.
+   * @returns No value.
+   */
+  public assignSubstring(value: string, start?: number, end?: number): void {
+    const [substringStart, substringEnd] = this.getSubstringRange(start, end);
+    assert(
+      typeof value === 'string' && value.split('').every((c) => isAscii(c)),
+      'CHARACTER values must contain only 8-bit characters',
+    );
+
+    const substringLength = substringEnd - substringStart + 1;
+    const replacement = value
+      .substring(0, substringLength)
+      .padEnd(substringLength, ' ');
+    this.value =
+      this.value.slice(0, substringStart - 1) +
+      replacement +
+      this.value.slice(substringEnd);
+  }
+
   private set len(l: number | undefined) {
-    if (l !== undefined) {
-      assert(Number.isInteger(l));
-      assert(l > 0);
-    }
+    assertCharacterLength(l);
     this._len = l;
   }
 
+  /** Declared character length, or `undefined` when the value has no fixed length. */
   public get len(): number | undefined {
     return this._len;
   }
 
+  /** Default standard and descriptive metadata used to construct character values. */
   public static get DefaultOptions(): FCharacterOptions {
     return {
       standard: FortranStandard.f77,
@@ -287,8 +705,10 @@ export class FCharacterArray extends FArray<string> {
       FCharacterArray.DefaultOptions.description,
     );
 
+    assertCharacterLength(options.len);
     this._elementLen = options.len;
     this.dim = options.dim ?? FCharacterArray.DefaultOptions.dim;
+    this.bounds = options.bounds;
     this.value = value;
   }
 
@@ -300,6 +720,19 @@ export class FCharacterArray extends FArray<string> {
     });
   }
 
+  protected createArray(
+    value: FortranArray<string>,
+    bounds: Array<[number, number]>,
+  ): FCharacterArray {
+    return new FCharacterArray(value, {
+      standard: this._standard,
+      len: this._elementLen,
+      dim: getArrayDimensions(bounds),
+      bounds,
+    });
+  }
+
+  /** Default metadata and one-dimensional shape used to construct character arrays. */
   public static get DefaultOptions(): FCharacterArrayOptions {
     return {
       standard: FortranStandard.f77,
@@ -331,17 +764,31 @@ export class FComplex extends FIntrinsic<Complex> {
     this.value = value;
   }
 
+  /** Complex datatype name, including its kind when specified. */
   public override get name(): string {
     return this.kind ? `${super.name}*${this.kind}` : super.name;
   }
 
   public set value(v: Complex) {
-    assert(typeof v === 'object' && v !== null);
-    assert('r' in v && typeof v.r === 'number');
-    assert('i' in v && typeof v.i === 'number');
+    assert(
+      typeof v === 'object' && v !== null,
+      'COMPLEX values must be objects with numeric real and imaginary parts',
+    );
+    assert(
+      'r' in v && typeof v.r === 'number',
+      'COMPLEX real part must be a number',
+    );
+    assert(
+      'i' in v && typeof v.i === 'number',
+      'COMPLEX imaginary part must be a number',
+    );
     this._value = v;
   }
 
+  /**
+   * Real and imaginary components; kind 8 values are rounded to JavaScript
+   * single-precision numbers.
+   */
   public get value(): Complex {
     if (this.kind === undefined || this.kind === 8) {
       return { r: Math.fround(this._value.r), i: Math.fround(this._value.i) };
@@ -356,10 +803,12 @@ export class FComplex extends FIntrinsic<Complex> {
     this._kind = k;
   }
 
+  /** Complex kind, or `undefined` for the default kind. */
   public get kind(): ComplexKind | undefined {
     return this._kind;
   }
 
+  /** Default standard and descriptive metadata used to construct complex values. */
   public static get DefaultOptions(): FComplexOptions {
     return {
       standard: FortranStandard.f77,
@@ -386,8 +835,12 @@ export class FComplexArray extends FArray<Complex> {
       FComplexArray.DefaultOptions.description,
     );
 
+    if (options.kind !== undefined) {
+      assertComplexKind(options.kind);
+    }
     this._elementKind = options.kind;
     this.dim = options.dim ?? FComplexArray.DefaultOptions.dim;
+    this.bounds = options.bounds;
     this.value = value;
   }
 
@@ -399,6 +852,24 @@ export class FComplexArray extends FArray<Complex> {
     });
   }
 
+  protected createArray(
+    value: FortranArray<Complex>,
+    bounds: Array<[number, number]>,
+  ): FComplexArray {
+    return new FComplexArray(value, {
+      standard: this._standard,
+      kind: this._elementKind,
+      dim: getArrayDimensions(bounds),
+      bounds,
+    });
+  }
+
+  /** Complex element kind, or `undefined` for the default kind. */
+  public get kind(): ComplexKind | undefined {
+    return this._elementKind;
+  }
+
+  /** Default metadata and one-dimensional shape used to construct complex arrays. */
   public static get DefaultOptions(): FComplexArrayOptions {
     return {
       standard: FortranStandard.f77,
@@ -430,15 +901,20 @@ export class FInteger extends FIntrinsic<number> {
     this.value = value;
   }
 
+  /** Integer datatype name, including its kind when specified. */
   public override get name(): string {
     return this.kind ? `${super.name}*${this.kind}` : super.name;
   }
 
   public set value(v: number) {
-    assert(isRangedInteger(v, (this.kind ?? 4) * 8, true));
+    assert(
+      isRangedInteger(v, (this.kind ?? 4) * 8, true),
+      `INTEGER values must be safe integers within the signed ${this.kind ?? 4}-byte range`,
+    );
     this._value = v;
   }
 
+  /** Integer value, restricted to the safe signed range of its kind. */
   public get value(): number {
     return this._value;
   }
@@ -450,10 +926,12 @@ export class FInteger extends FIntrinsic<number> {
     this._kind = k;
   }
 
+  /** Integer kind, or `undefined` for the default kind. */
   public get kind(): IntegerKind | undefined {
     return this._kind;
   }
 
+  /** Default standard and descriptive metadata used to construct integer values. */
   public static get DefaultOptions(): FIntegerOptions {
     return {
       standard: FortranStandard.f77,
@@ -480,8 +958,12 @@ export class FIntegerArray extends FArray<number> {
       FIntegerArray.DefaultOptions.description,
     );
 
+    if (options.kind !== undefined) {
+      assertIntegerKind(options.kind);
+    }
     this._elementKind = options.kind;
     this.dim = options.dim ?? FIntegerArray.DefaultOptions.dim;
+    this.bounds = options.bounds;
     this.value = value;
   }
 
@@ -493,6 +975,24 @@ export class FIntegerArray extends FArray<number> {
     });
   }
 
+  protected createArray(
+    value: FortranArray<number>,
+    bounds: Array<[number, number]>,
+  ): FIntegerArray {
+    return new FIntegerArray(value, {
+      standard: this._standard,
+      kind: this._elementKind,
+      dim: getArrayDimensions(bounds),
+      bounds,
+    });
+  }
+
+  /** Integer element kind, or `undefined` for the default kind. */
+  public get kind(): IntegerKind | undefined {
+    return this._elementKind;
+  }
+
+  /** Default metadata and one-dimensional shape used to construct integer arrays. */
   public static get DefaultOptions(): FIntegerArrayOptions {
     return {
       standard: FortranStandard.f77,
@@ -524,15 +1024,17 @@ export class FLogical extends FIntrinsic<boolean> {
     this.value = value;
   }
 
+  /** Logical datatype name, including its kind when specified. */
   public override get name(): string {
     return this.kind ? `${super.name}*${this.kind}` : super.name;
   }
 
   public set value(v: boolean) {
-    assert(typeof v === 'boolean');
+    assert(typeof v === 'boolean', 'LOGICAL values must be booleans');
     this._value = v;
   }
 
+  /** Logical value. */
   public get value(): boolean {
     return this._value;
   }
@@ -544,10 +1046,12 @@ export class FLogical extends FIntrinsic<boolean> {
     this._kind = k;
   }
 
+  /** Logical kind, or `undefined` for the default kind. */
   public get kind(): LogicalKind | undefined {
     return this._kind;
   }
 
+  /** Default standard and descriptive metadata used to construct logical values. */
   public static get DefaultOptions(): FLogicalOptions {
     return {
       standard: FortranStandard.f77,
@@ -574,8 +1078,12 @@ export class FLogicalArray extends FArray<boolean> {
       FLogicalArray.DefaultOptions.description,
     );
 
+    if (options.kind !== undefined) {
+      assertLogicalKind(options.kind);
+    }
     this._elementKind = options.kind;
     this.dim = options.dim ?? FLogicalArray.DefaultOptions.dim;
+    this.bounds = options.bounds;
     this.value = value;
   }
 
@@ -587,6 +1095,24 @@ export class FLogicalArray extends FArray<boolean> {
     });
   }
 
+  protected createArray(
+    value: FortranArray<boolean>,
+    bounds: Array<[number, number]>,
+  ): FLogicalArray {
+    return new FLogicalArray(value, {
+      standard: this._standard,
+      kind: this._elementKind,
+      dim: getArrayDimensions(bounds),
+      bounds,
+    });
+  }
+
+  /** Logical element kind, or `undefined` for the default kind. */
+  public get kind(): LogicalKind | undefined {
+    return this._elementKind;
+  }
+
+  /** Default metadata and one-dimensional shape used to construct logical arrays. */
   public static get DefaultOptions(): FLogicalArrayOptions {
     return {
       standard: FortranStandard.f77,
@@ -615,15 +1141,17 @@ export class FReal extends FIntrinsic<number> {
     this.value = value;
   }
 
+  /** Real datatype name, including its kind when specified. */
   public override get name(): string {
     return this.kind ? `${super.name}*${this.kind}` : super.name;
   }
 
   public set value(v: number) {
-    assert(typeof v === 'number');
+    assert(typeof v === 'number', 'REAL values must be numbers');
     this._value = v;
   }
 
+  /** Real value; default and kind 4 values are rounded to single precision. */
   public get value(): number {
     if (this.kind === undefined || this.kind === 4) {
       return Math.fround(this._value);
@@ -638,10 +1166,12 @@ export class FReal extends FIntrinsic<number> {
     this._kind = k;
   }
 
+  /** Real kind, or `undefined` for the default kind. */
   public get kind(): RealKind | undefined {
     return this._kind;
   }
 
+  /** Default standard and descriptive metadata used to construct real values. */
   public static get DefaultOptions(): FRealOptions {
     return {
       standard: FortranStandard.f77,
@@ -668,8 +1198,12 @@ export class FRealArray extends FArray<number> {
       FRealArray.DefaultOptions.description,
     );
 
+    if (options.kind !== undefined) {
+      assertRealKind(options.kind);
+    }
     this._elementKind = options.kind;
     this.dim = options.dim ?? FRealArray.DefaultOptions.dim;
+    this.bounds = options.bounds;
     this.value = value;
   }
 
@@ -681,6 +1215,24 @@ export class FRealArray extends FArray<number> {
     });
   }
 
+  protected createArray(
+    value: FortranArray<number>,
+    bounds: Array<[number, number]>,
+  ): FRealArray {
+    return new FRealArray(value, {
+      standard: this._standard,
+      kind: this._elementKind,
+      dim: getArrayDimensions(bounds),
+      bounds,
+    });
+  }
+
+  /** Real element kind, or `undefined` for the default kind. */
+  public get kind(): RealKind | undefined {
+    return this._elementKind;
+  }
+
+  /** Default metadata and one-dimensional shape used to construct real arrays. */
   public static get DefaultOptions(): FRealArrayOptions {
     return {
       standard: FortranStandard.f77,
