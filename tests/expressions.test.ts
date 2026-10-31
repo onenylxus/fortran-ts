@@ -838,6 +838,18 @@ describe('invalid constructor and assignment inputs', () => {
     expect(Fortran.INTEGER(-3.75)).toMatchObject({ value: -3 });
   });
 
+  test('converts byte and logical scalars to integer, real, and complex values', () => {
+    const byte = Fortran.BYTE(65);
+    const logical = Fortran.LOGICAL(true);
+
+    expect(Fortran.INTEGER(byte)).toMatchObject({ value: 65 });
+    expect(Fortran.REAL(byte)).toMatchObject({ value: 65 });
+    expect(Fortran.COMPLEX(byte)).toMatchObject({ value: { r: 65, i: 0 } });
+    expect(Fortran.INTEGER(logical)).toMatchObject({ value: 1 });
+    expect(Fortran.REAL(logical)).toMatchObject({ value: 1 });
+    expect(Fortran.COMPLEX(logical)).toMatchObject({ value: { r: 1, i: 0 } });
+  });
+
   test('extracts sections with scalar selectors, bounds, and strides', () => {
     const array = new FIntegerArray(
       [

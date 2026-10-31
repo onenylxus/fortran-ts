@@ -596,6 +596,25 @@ describe('ADD', () => {
       expect(result.toColumnMajorArray()).toStrictEqual([2.5, 5.5]);
     });
 
+    test('preserves promoted kind and left operand standard in array results', () => {
+      const left = new FRealArray([1, 2], {
+        dim: [2],
+        kind: 8,
+        standard: 'Fortran95' as FortranStandard,
+      });
+      const right = new FRealArray([0.5, 1.5], {
+        dim: [2],
+        kind: 4,
+        standard: 'Fortran2008' as FortranStandard,
+      });
+      const result = Fortran.ADD(left, right);
+
+      expect(result).toBeInstanceOf(FRealArray);
+      expect(result.kind).toBe(8);
+      expect(result.standard).toBe('Fortran95');
+      expect(result.toColumnMajorArray()).toStrictEqual([1.5, 3.5]);
+    });
+
     test('matches multidimensional elements by position despite differing bounds', () => {
       const left = new FIntegerArray(
         [
