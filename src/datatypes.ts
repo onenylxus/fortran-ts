@@ -60,6 +60,7 @@ abstract class FIntrinsic<T> implements FDataOptions {
 
 type FArrayOptions = {
   dim: Dimension;
+  bounds?: Array<[number, number]>;
 } & FDataOptions;
 
 type FortranArrayValue<T> = (T | undefined | FortranArrayValue<T>)[];
@@ -76,6 +77,7 @@ abstract class FArray<P, T extends { value: P } = FIntrinsic<P>>
 {
   declare protected _value: FortranArray<T>;
   declare private _dim: Dimension;
+  declare private _bounds: Array<[number, number]>;
 
   public constructor(
     protected _standard: FortranStandard,
@@ -145,6 +147,26 @@ abstract class FArray<P, T extends { value: P } = FIntrinsic<P>>
     this._dim = d;
   }
 
+  protected set bounds(bounds: Array<[number, number]> | undefined) {
+    const resolvedBounds =
+      bounds ?? this.dim.map((extent) => [1, extent] as [number, number]);
+    assert(
+      Array.isArray(resolvedBounds) &&
+        resolvedBounds.length === this.rank &&
+        resolvedBounds.every(
+          (bound, index) =>
+            Array.isArray(bound) &&
+            bound.length === 2 &&
+            Number.isSafeInteger(bound[0]) &&
+            Number.isSafeInteger(bound[1]) &&
+            bound[1] >= bound[0] &&
+            bound[1] - bound[0] + 1 === this.dim[index],
+        ),
+      'Fortran array bounds must be integer pairs matching declared extents',
+    );
+    this._bounds = resolvedBounds.map(([lower, upper]) => [lower, upper]);
+  }
+
   public get dim(): Dimension {
     if (typeof this._dim === 'number') {
       return [this._dim];
@@ -154,6 +176,18 @@ abstract class FArray<P, T extends { value: P } = FIntrinsic<P>>
 
   public get rank(): number {
     return this.dim.length;
+  }
+
+  public get bounds(): Array<[number, number]> {
+    return this._bounds.map(([lower, upper]) => [lower, upper]);
+  }
+
+  public get lowerBounds(): number[] {
+    return this._bounds.map(([lower]) => lower);
+  }
+
+  public get upperBounds(): number[] {
+    return this._bounds.map(([, upper]) => upper);
   }
 }
 
@@ -227,6 +261,7 @@ export class FByteArray extends FArray<Byte> {
     );
 
     this.dim = options.dim ?? FByteArray.DefaultOptions.dim;
+    this.bounds = options.bounds;
     this.value = value;
   }
 
@@ -375,6 +410,7 @@ export class FCharacterArray extends FArray<string> {
     assertCharacterLength(options.len);
     this._elementLen = options.len;
     this.dim = options.dim ?? FCharacterArray.DefaultOptions.dim;
+    this.bounds = options.bounds;
     this.value = value;
   }
 
@@ -483,6 +519,7 @@ export class FComplexArray extends FArray<Complex> {
 
     this._elementKind = options.kind;
     this.dim = options.dim ?? FComplexArray.DefaultOptions.dim;
+    this.bounds = options.bounds;
     this.value = value;
   }
 
@@ -580,6 +617,7 @@ export class FIntegerArray extends FArray<number> {
 
     this._elementKind = options.kind;
     this.dim = options.dim ?? FIntegerArray.DefaultOptions.dim;
+    this.bounds = options.bounds;
     this.value = value;
   }
 
@@ -674,6 +712,7 @@ export class FLogicalArray extends FArray<boolean> {
 
     this._elementKind = options.kind;
     this.dim = options.dim ?? FLogicalArray.DefaultOptions.dim;
+    this.bounds = options.bounds;
     this.value = value;
   }
 
@@ -768,6 +807,7 @@ export class FRealArray extends FArray<number> {
 
     this._elementKind = options.kind;
     this.dim = options.dim ?? FRealArray.DefaultOptions.dim;
+    this.bounds = options.bounds;
     this.value = value;
   }
 

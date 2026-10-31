@@ -677,6 +677,60 @@ describe('invalid constructor and assignment inputs', () => {
     ).toThrow('Fortran array extents must match declared dimensions');
   });
 
+  test('stores array bounds while preserving dimensions as extents', () => {
+    const array = new FIntegerArray(
+      [
+        [1, 2],
+        [3, 4],
+      ],
+      { dim: [2, 2], bounds: [[-1, 0], [3, 4]] },
+    );
+
+    expect(array.dim).toStrictEqual([2, 2]);
+    expect(array.bounds).toStrictEqual([
+      [-1, 0],
+      [3, 4],
+    ]);
+    expect(array.lowerBounds).toStrictEqual([-1, 3]);
+    expect(array.upperBounds).toStrictEqual([0, 4]);
+
+    array.bounds[0][0] = 100;
+    expect(array.lowerBounds).toStrictEqual([-1, 3]);
+  });
+
+  test('defaults array bounds to one-based dimension extents', () => {
+    const array = new FIntegerArray([1, 2, 3], { dim: [3] });
+
+    expect(array.bounds).toStrictEqual([[1, 3]]);
+    expect(array.lowerBounds).toStrictEqual([1]);
+    expect(array.upperBounds).toStrictEqual([3]);
+  });
+
+  test('rejects invalid array bounds', () => {
+    expect(
+      () => new FIntegerArray([1, 2], { bounds: [[0, 2]] }),
+    ).toThrow(
+      'Fortran array bounds must be integer pairs matching declared extents',
+    );
+    expect(
+      () =>
+        new FIntegerArray(
+          [
+            [1, 2],
+            [3, 4],
+          ],
+          { dim: [2, 2], bounds: [[1, 2]] },
+        ),
+    ).toThrow(
+      'Fortran array bounds must be integer pairs matching declared extents',
+    );
+    expect(
+      () => new FIntegerArray([1], { bounds: [[2, 1]] }),
+    ).toThrow(
+      'Fortran array bounds must be integer pairs matching declared extents',
+    );
+  });
+
   test('rejects invalid reassigned values', () => {
     const integer = new FInteger(1);
     const character = new FCharacter('a');
