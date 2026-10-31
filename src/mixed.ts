@@ -104,6 +104,21 @@ function getRank(e: ArithmeticExpression): number {
   assert.fail('Unsupported arithmetic expression');
 }
 
+function getEqualRankKind(
+  a: ArithmeticExpression,
+  b: ArithmeticExpression,
+): number {
+  const operands = [a, b];
+  const typeOrder = [FComplex, FReal, FInteger, FLogical, FByte];
+  for (const type of typeOrder) {
+    const operand = operands.find((value) => value instanceof type);
+    if (operand !== undefined) {
+      return getKind(operand);
+    }
+  }
+  assert.fail('Unsupported arithmetic expression');
+}
+
 type PromotionTarget =
   | typeof FComplex
   | typeof FInteger
@@ -152,7 +167,10 @@ export function mix<
   const rankA = getRank(a);
   const rankB = getRank(b);
   const resultRank = Math.max(rankA, rankB);
-  const resultKind = Math.max(getKind(a), getKind(b));
+  const resultKind =
+    rankA === rankB
+      ? getEqualRankKind(a, b)
+      : getKind(rankA > rankB ? a : b);
 
   let c: Mix<A, B> | undefined;
   let d: Mix<A, B> | undefined;

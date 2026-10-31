@@ -731,6 +731,19 @@ describe('invalid constructor and assignment inputs', () => {
     );
   });
 
+  test('exposes and validates numeric array kinds', () => {
+    expect(new FIntegerArray([1], { kind: 8 }).kind).toBe(8);
+    expect(new FRealArray([1], { kind: 16 }).kind).toBe(16);
+    expect(new FComplexArray([{ r: 1, i: 2 }], { kind: 32 }).kind).toBe(32);
+    expect(new FLogicalArray([true], { kind: 1 }).kind).toBe(1);
+    expect(
+      () => new FIntegerArray([1], { kind: 3 as unknown as IntegerKind }),
+    ).toThrow('Invalid integer kind: 3');
+    expect(
+      () => new FRealArray([1], { kind: 3 as unknown as RealKind }),
+    ).toThrow('Invalid real kind: 3');
+  });
+
   test('gets and sets elements using Fortran subscripts and declared bounds', () => {
     const array = new FIntegerArray(
       [
@@ -794,6 +807,35 @@ describe('invalid constructor and assignment inputs', () => {
     const array = new FIntegerArray([3, 1, 2], { dim: [3] });
 
     expect(array.toColumnMajorArray()).toStrictEqual([3, 1, 2]);
+  });
+
+  test('preserves requested kinds in scalar conversions', () => {
+    const complex = Fortran.COMPLEX({ r: 1.0000000596046448, i: 2 }, 16);
+    const real = Fortran.REAL(complex, 8);
+    const integer = Fortran.INTEGER(
+      Fortran.REAL(3.75, 8),
+      8,
+    );
+    const widenedComplex = Fortran.COMPLEX(
+      Fortran.REAL(1.0000000596046448, 8),
+      16,
+    );
+    const convertedComplex = Fortran.COMPLEX(
+      Fortran.REAL(1.0000000596046448, 8),
+      32,
+    );
+
+    expect(real.kind).toBe(8);
+    expect(real.value).toBe(1.0000000596046448);
+    expect(integer).toMatchObject({ value: 3, kind: 8 });
+    expect(widenedComplex.kind).toBe(16);
+    expect(widenedComplex.value.r).toBe(1.0000000596046448);
+    expect(convertedComplex.kind).toBe(32);
+    expect(convertedComplex.value.r).toBe(1.0000000596046448);
+    expect(Fortran.DOUBLE_PRECISION(3.14).kind).toBe(8);
+    expect(Fortran.DOUBLE_COMPLEX({ r: 1, i: 2 }).kind).toBe(16);
+    expect(Fortran.INTEGER(3.75)).toMatchObject({ value: 3 });
+    expect(Fortran.INTEGER(-3.75)).toMatchObject({ value: -3 });
   });
 
   test('extracts sections with scalar selectors, bounds, and strides', () => {

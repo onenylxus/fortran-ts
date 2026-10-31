@@ -772,6 +772,9 @@ export class FComplexArray extends FArray<Complex> {
       FComplexArray.DefaultOptions.description,
     );
 
+    if (options.kind !== undefined) {
+      assertComplexKind(options.kind);
+    }
     this._elementKind = options.kind;
     this.dim = options.dim ?? FComplexArray.DefaultOptions.dim;
     this.bounds = options.bounds;
@@ -796,6 +799,10 @@ export class FComplexArray extends FArray<Complex> {
       dim: getArrayDimensions(bounds),
       bounds,
     });
+  }
+
+  public get kind(): ComplexKind | undefined {
+    return this._elementKind;
   }
 
   public static get DefaultOptions(): FComplexArrayOptions {
@@ -882,6 +889,9 @@ export class FIntegerArray extends FArray<number> {
       FIntegerArray.DefaultOptions.description,
     );
 
+    if (options.kind !== undefined) {
+      assertIntegerKind(options.kind);
+    }
     this._elementKind = options.kind;
     this.dim = options.dim ?? FIntegerArray.DefaultOptions.dim;
     this.bounds = options.bounds;
@@ -906,6 +916,10 @@ export class FIntegerArray extends FArray<number> {
       dim: getArrayDimensions(bounds),
       bounds,
     });
+  }
+
+  public get kind(): IntegerKind | undefined {
+    return this._elementKind;
   }
 
   public static get DefaultOptions(): FIntegerArrayOptions {
@@ -989,6 +1003,9 @@ export class FLogicalArray extends FArray<boolean> {
       FLogicalArray.DefaultOptions.description,
     );
 
+    if (options.kind !== undefined) {
+      assertLogicalKind(options.kind);
+    }
     this._elementKind = options.kind;
     this.dim = options.dim ?? FLogicalArray.DefaultOptions.dim;
     this.bounds = options.bounds;
@@ -1013,6 +1030,10 @@ export class FLogicalArray extends FArray<boolean> {
       dim: getArrayDimensions(bounds),
       bounds,
     });
+  }
+
+  public get kind(): LogicalKind | undefined {
+    return this._elementKind;
   }
 
   public static get DefaultOptions(): FLogicalArrayOptions {
@@ -1096,6 +1117,9 @@ export class FRealArray extends FArray<number> {
       FRealArray.DefaultOptions.description,
     );
 
+    if (options.kind !== undefined) {
+      assertRealKind(options.kind);
+    }
     this._elementKind = options.kind;
     this.dim = options.dim ?? FRealArray.DefaultOptions.dim;
     this.bounds = options.bounds;
@@ -1120,6 +1144,10 @@ export class FRealArray extends FArray<number> {
       dim: getArrayDimensions(bounds),
       bounds,
     });
+  }
+
+  public get kind(): RealKind | undefined {
+    return this._elementKind;
   }
 
   public static get DefaultOptions(): FRealArrayOptions {

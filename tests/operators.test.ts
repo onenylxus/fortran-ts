@@ -1506,3 +1506,47 @@ describe('CONCAT', () => {
     expect(c.value).toStrictEqual('HELLO WORLD');
   });
 });
+
+describe('kind-aware mixed-mode arithmetic', () => {
+  test('uses the real operand kind for mixed integer and real arithmetic', () => {
+    const integer = Fortran.INTEGER(2, 8);
+    const real = Fortran.REAL(2.5, 4);
+
+    expect(Fortran.ADD(integer, real)).toMatchObject({
+      value: 4.5,
+      kind: 4,
+    });
+    expect(Fortran.ADD(real, integer)).toMatchObject({
+      value: 4.5,
+      kind: 4,
+    });
+  });
+
+  test('promotes same-type operands to the wider kind in either order', () => {
+    const single = Fortran.REAL(1.25, 4);
+    const double = Fortran.REAL(2.5, 8);
+
+    expect(Fortran.ADD(single, double)).toMatchObject({
+      value: 3.75,
+      kind: 8,
+    });
+    expect(Fortran.ADD(double, single)).toMatchObject({
+      value: 3.75,
+      kind: 8,
+    });
+  });
+
+  test('preserves complex kind when promoted with a narrower real', () => {
+    const complex = Fortran.COMPLEX({ r: 1, i: 2 }, 16);
+    const real = Fortran.REAL(3.5, 4);
+
+    expect(Fortran.ADD(complex, real)).toMatchObject({
+      value: { r: 4.5, i: 2 },
+      kind: 16,
+    });
+    expect(Fortran.ADD(real, complex)).toMatchObject({
+      value: { r: 4.5, i: 2 },
+      kind: 16,
+    });
+  });
+});

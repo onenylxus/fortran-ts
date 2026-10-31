@@ -123,7 +123,10 @@ export default class Fortran {
   }
 
   public static CMPLX(value: Complex, kind?: ComplexKind): FComplex;
-  public static CMPLX(value: ArithmeticExpression): FComplex;
+  public static CMPLX(
+    value: ArithmeticExpression,
+    kind?: ComplexKind,
+  ): FComplex;
   public static CMPLX(
     value: FortranArray<Complex>,
     kind?: ComplexKind,
@@ -145,7 +148,7 @@ export default class Fortran {
         kind,
       });
     }
-    return cmplx(value as ArithmeticExpression);
+    return cmplx(value as ArithmeticExpression, kind);
   }
   public static COMPLEX = Fortran.CMPLX;
 
@@ -204,7 +207,10 @@ export default class Fortran {
   public static DOUBLE_COMPLEX = Fortran.DCMPLX;
 
   public static INT(value: number, kind?: IntegerKind): FInteger;
-  public static INT(value: ArithmeticExpression): FInteger;
+  public static INT(
+    value: ArithmeticExpression,
+    kind?: IntegerKind,
+  ): FInteger;
   public static INT(
     value: FortranArray<number>,
     kind?: IntegerKind,
@@ -221,9 +227,12 @@ export default class Fortran {
       });
     }
     if (typeof value === 'number') {
-      return new FInteger(value, { ...FInteger.DefaultOptions, kind });
+      return new FInteger(Math.trunc(value), {
+        ...FInteger.DefaultOptions,
+        kind,
+      });
     }
-    return int(value);
+    return int(value, kind);
   }
   public static INTEGER = Fortran.INT;
 
@@ -299,7 +308,7 @@ export default class Fortran {
   }
 
   public static REAL(value: number, kind?: RealKind): FReal;
-  public static REAL(value: ArithmeticExpression): FReal;
+  public static REAL(value: ArithmeticExpression, kind?: RealKind): FReal;
   public static REAL(value: FortranArray<number>, kind?: RealKind): FRealArray;
   public static REAL(
     value: number | ArithmeticExpression | FortranArray<number>,
@@ -315,7 +324,7 @@ export default class Fortran {
     if (typeof value === 'number') {
       return new FReal(value, { ...FReal.DefaultOptions, kind });
     }
-    return real(value);
+    return real(value, kind);
   }
 
   public static FLOAT(value: FInteger): FReal {
