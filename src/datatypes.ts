@@ -189,6 +189,45 @@ abstract class FArray<P, T extends { value: P } = FIntrinsic<P>>
   public get upperBounds(): number[] {
     return this._bounds.map(([, upper]) => upper);
   }
+
+  private getArrayIndices(subscripts: number[]): number[] {
+    assert(
+      subscripts.length === this.rank,
+      `Fortran array subscripts must provide exactly ${this.rank} indices`,
+    );
+    return subscripts.map((subscript, index) => {
+      const [lower, upper] = this._bounds[index];
+      assert(
+        Number.isSafeInteger(subscript) &&
+          subscript >= lower &&
+          subscript <= upper,
+        `Fortran array subscript ${subscript} is outside bounds ${lower}:${upper} in dimension ${index + 1}`,
+      );
+      return subscript - lower;
+    });
+  }
+
+  public getElement(...subscripts: number[]): T {
+    const indices = this.getArrayIndices(subscripts);
+    let element: T | FortranArray<T> = this._value;
+    for (const index of indices) {
+      assert(Array.isArray(element), 'Invalid Fortran array shape');
+      element = element[index] as T | FortranArray<T>;
+    }
+    assert(!Array.isArray(element), 'Invalid Fortran array shape');
+    return element;
+  }
+
+  public setElement(value: P, ...subscripts: number[]): void {
+    const indices = this.getArrayIndices(subscripts);
+    let elements: unknown[] = this._value;
+    for (const index of indices.slice(0, -1)) {
+      const next = elements[index];
+      assert(Array.isArray(next), 'Invalid Fortran array shape');
+      elements = next;
+    }
+    elements[indices[indices.length - 1]] = this.build(value);
+  }
 }
 
 type FByteOptions = FIntrinsicOptions;

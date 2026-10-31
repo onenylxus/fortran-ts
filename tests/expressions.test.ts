@@ -731,6 +731,50 @@ describe('invalid constructor and assignment inputs', () => {
     );
   });
 
+  test('gets and sets elements using Fortran subscripts and declared bounds', () => {
+    const array = new FIntegerArray(
+      [
+        [10, 20],
+        [30, 40],
+      ],
+      { dim: [2, 2], bounds: [[-1, 0], [3, 4]] },
+    );
+
+    expect(array.getElement(-1, 3)).toMatchObject({ value: 10 });
+    expect(array.getElement(0, 4)).toMatchObject({ value: 40 });
+
+    array.setElement(99, 0, 3);
+    expect(array.getElement(0, 3)).toMatchObject({ value: 99 });
+    expect(array.value).toStrictEqual([
+      undefined,
+      [undefined, 10, 20],
+      [undefined, 99, 40],
+    ]);
+  });
+
+  test('rejects subscripts with invalid rank, type, or bounds', () => {
+    const array = new FIntegerArray([10, 20], {
+      dim: [2],
+      bounds: [[-2, -1]],
+    });
+
+    expect(() => array.getElement()).toThrow(
+      'Fortran array subscripts must provide exactly 1 indices',
+    );
+    expect(() => array.getElement(-2, -1)).toThrow(
+      'Fortran array subscripts must provide exactly 1 indices',
+    );
+    expect(() => array.getElement(-1.5)).toThrow(
+      'Fortran array subscript -1.5 is outside bounds -2:-1 in dimension 1',
+    );
+    expect(() => array.getElement(0)).toThrow(
+      'Fortran array subscript 0 is outside bounds -2:-1 in dimension 1',
+    );
+    expect(() => array.setElement(1, -3)).toThrow(
+      'Fortran array subscript -3 is outside bounds -2:-1 in dimension 1',
+    );
+  });
+
   test('rejects invalid reassigned values', () => {
     const integer = new FInteger(1);
     const character = new FCharacter('a');
